@@ -13,7 +13,7 @@ function AdminDashboardPage() {
       try {
         const token = localStorage.getItem('authToken');
         const config = { headers: { Authorization: `Token ${token}` } };
-        const response = await axios.get('http://127.0.0.1:8000/api/admin/users/', config);
+        const response = await axios.get('https://quran-app-8ay9.onrender.com/api/admin/users/', config);
         setUsers(response.data);
       } catch (error) {
         console.error("Failed to fetch users", error);
