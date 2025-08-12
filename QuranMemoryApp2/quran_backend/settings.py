@@ -9,10 +9,10 @@ SECRET_KEY = 'django-insecure-your-secret-key-goes-here'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "quran-app-8ay9.onrender.com",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
     "gleeful-haupia-3d4fa4.netlify.app",
-    "localhost",
-    "127.0.0.1",
+    "quran-app-8ay9.onrender.com",
 ]
 
 INSTALLED_APPS = [
