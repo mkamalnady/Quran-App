@@ -1,14 +1,6 @@
 return (
   <>
     <div className="container quran-dashboard">
-      {/* تحية باسم المستخدم (إن وجدت) */}
-      {/* إن كنت أضفت userName في الصفحة: 
-          <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>
-            السلام عليكم {userName ? userName : "ضيفنا العزيز"} 🌸
-          </h2>
-      */}
-
-      {/* Hero */}
       <div className="hero-section">
         <div className="hero-content">
           <img src="/quran-logo.png" alt="القرآن الكريم" className="hero-logo" />
@@ -18,7 +10,6 @@ return (
         </div>
       </div>
 
-      {/* إحصائيات الرحلة */}
       <div className="journey-stats">
         <h2 className="section-title">🌟 رحلتك مع القرآن الكريم</h2>
         <div className="stats-grid">
@@ -40,7 +31,6 @@ return (
         </div>
       </div>
 
-      {/* السورة الحالية */}
       {stats.currentSurah && (
         <div className="current-surah-section">
           <h2 className="section-title">📚 السورة الجارية</h2>
@@ -89,7 +79,6 @@ return (
         </div>
       )}
 
-      {/* جدول السور */}
       <div className="surahs-section">
         <h2 className="section-title">📋 جميع السور الكريمة</h2>
         <div className="table-responsive">
@@ -148,7 +137,6 @@ return (
       </div>
     </div>
 
-    {/* Modal */}
     {isModalOpen && selectedSurah && (
       <Modal
         onClose={closeModal}
@@ -247,7 +235,8 @@ return (
       </Modal>
     )}
 
-    {/* Styles */}
-    <style jsx>{`/* نفس كتلة الستايل التي لديك بالكامل هنا بدون تغيير */`}</style>
+    <style jsx>{`
+      /* انقل هنا نفس كتلة الستايل كما في نسختك */
+    `}</style>
   </>
 );
