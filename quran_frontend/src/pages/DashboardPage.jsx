@@ -22,8 +22,8 @@ function DashboardPage() {
             if (!token) throw new Error("Token not found");
             const config = { headers: { Authorization: `Token ${token}` } };
             const [surahsResponse, memoResponse] = await Promise.all([
-                axios.get('http://127.0.0.1:8000/api/surahs/', config),
-                axios.get('http://127.0.0.1:8000/api/memorization/', config)
+                axios.get('https://quran-app-8ay9.onrender.com/api/surahs/', config),
+                axios.get('https://quran-app-8ay9.onrender.com/api/memorization/', config)
             ]);
             setSurahs(surahsResponse.data);
             setMemorizations(memoResponse.data);
@@ -106,7 +106,7 @@ function DashboardPage() {
             return;
         }
         const data = { surah: selectedSurah.number, start_ayah: 1, end_ayah: end };
-        const url = selectedSurah.progress ? `http://127.0.0.1:8000/api/memorization/${selectedSurah.progress.id}/` : 'http://127.0.0.1:8000/api/memorization/';
+        const url = selectedSurah.progress ? `https://quran-app-8ay9.onrender.com/api/memorization/${selectedSurah.progress.id}/` : 'https://quran-app-8ay9.onrender.com/api/memorization/';
         const method = selectedSurah.progress ? 'patch' : 'post';
         handleApiCall(method, url, data);
     };
@@ -117,7 +117,7 @@ function DashboardPage() {
         const now = new Date();
         const newHistory = [...(progress.review_history || []), { date: now.toISOString() }];
         const data = { review_history: newHistory, last_review_date: now.toISOString() };
-        handleApiCall('patch', `http://127.0.0.1:8000/api/memorization/${progress.id}/`, data);
+        handleApiCall('patch', `https://quran-app-8ay9.onrender.com/api/memorization/${progress.id}/`, data);
     };
 
     if (loading) return (
