@@ -66,7 +66,7 @@ function Navbar() {
         try {
             const token = localStorage.getItem('authToken');
             const config = { headers: { Authorization: `Token ${token}` } };
-            const response = await axios.get('http://127.0.0.1:8000/api/auth/user/', config);
+            const response = await axios.get('https://quran-app-8ay9.onrender.com/api/auth/user/', config);
             setUserInfo(response.data);
         } catch (error) {
             console.error('Failed to fetch user info:', error);
