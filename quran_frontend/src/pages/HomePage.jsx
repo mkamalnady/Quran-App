@@ -10,7 +10,7 @@ function HomePage() {
   useEffect(() => {
     const fetchSurahs = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/api/surahs/');
+        const response = await axios.get('https://quran-app-8ay9.onrender.com/api/surahs/');
         setSurahs(response.data);
         setError(null);
       } catch (err) {
