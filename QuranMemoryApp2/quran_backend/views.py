@@ -8,14 +8,14 @@ def home(request):
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>تطبيق حفظ القرآن الكريم</title>
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Reem+Kufi&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Cairo&display=swap');
 
             body {
                 margin: 0;
                 padding: 0;
-                font-family: 'Reem Kufi', sans-serif;
-                background: linear-gradient(135deg, #3a8869, #88b04b);
-                color: #fff;
+                font-family: 'Cairo', sans-serif;
+                background: linear-gradient(135deg, #2c3e50, #4ca1af);
+                color: #f0f8ff;
                 min-height: 100vh;
                 display: flex;
                 justify-content: center;
@@ -25,86 +25,90 @@ def home(request):
             }
 
             .container {
-                background-color: rgba(0, 0, 0, 0.35);
-                padding: 40px 30px;
-                border-radius: 25px;
-                max-width: 600px;
-                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+                background-color: rgba(0, 0, 0, 0.45);
+                padding: 45px 35px;
+                border-radius: 30px;
+                max-width: 650px;
+                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
             }
 
             img {
-                width: 110px;
-                margin-bottom: 25px;
-                filter: drop-shadow(0 0 10px #ffd700);
+                width: 120px;
+                margin-bottom: 30px;
+                filter: drop-shadow(0 0 10px #00fff7);
             }
 
             h1 {
-                font-size: 2.8rem;
-                margin-bottom: 15px;
+                font-size: 3rem;
+                margin-bottom: 18px;
                 letter-spacing: 2px;
-                text-shadow: 2px 2px 6px #2a5d37;
+                text-shadow: 2px 2px 8px #001f26;
             }
 
             p.desc {
-                font-size: 1.2rem;
-                margin-bottom: 40px;
-                color: #e0f2f1cc;
-                line-height: 1.5;
-                font-weight: 500;
+                font-size: 1.3rem;
+                margin-bottom: 45px;
+                color: #cce7e8cc;
+                line-height: 1.6;
+                font-weight: 600;
             }
 
             a {
                 display: inline-block;
                 text-decoration: none;
-                background: #ffd700;
-                color: #3a8869;
-                padding: 15px 35px;
-                margin: 10px 15px;
-                border-radius: 40px;
+                background: #008080;
+                color: #e0f7f7;
+                padding: 16px 42px;
+                margin: 12px 18px;
+                border-radius: 45px;
                 font-weight: 700;
-                font-size: 1.15rem;
-                box-shadow: 0 6px 10px rgba(255, 215, 0, 0.6);
-                transition: background-color 0.3s ease, color 0.3s ease;
+                font-size: 1.2rem;
+                box-shadow: 0 7px 16px rgba(0, 128, 128, 0.6);
+                transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
             }
 
             a:hover {
-                background: #fff;
-                color: #2a5d37;
-                box-shadow: 0 8px 15px rgba(255, 255, 255, 0.8);
+                background: #00b3b3;
+                color: #001f26;
+                box-shadow: 0 10px 25px rgba(0, 179, 179, 0.9);
             }
 
-            /* تصميم الروابط الصغيرة أسفل */
             .footer-links {
-                margin-top: 50px;
-                font-size: 1rem;
-                color: #c5e1a5cc;
+                margin-top: 55px;
+                font-size: 1.1rem;
+                color: #a0d8d8cc;
+                line-height: 1.8;
+                font-weight: 600;
             }
 
             .footer-links a {
-                color: #c5e1a5cc;
-                margin: 0 10px;
-                font-weight: 600;
+                color: #a0d8d8cc;
+                margin: 0 12px;
                 text-decoration: underline;
+                transition: color 0.25s ease;
             }
 
             .footer-links a:hover {
-                color: #fff;
+                color: #f0ffff;
             }
         </style>
     </head>
     <body>
         <div class="container">
-            <img src="https://cdn-icons-png.flaticon.com/512/1472/1472886.png" alt="شعار القرآن الكريم" />
+            <img src="https://upload.wikimedia.org/wikipedia/commons/9/94/Quran_cover%2C_Mashhad%2C_Iran.jpg" alt="شعار القرآن الكريم" />
             <h1>بسم الله الرحمن الرحيم</h1>
-            <p class="desc">مرحبًا بك في تطبيق حفظ القرآن الكريم، رفيقك الأمين في رحلتك المباركة لحفظ كتاب الله.</p>
+            <p class="desc">مرحبًا بك في تطبيق حفظ القرآن الكريم، رفيقك الأمين في رحلتك المباركة لحفظ كتاب الله العظيم.</p>
             
-            <a href="https://gleeful-haupia-3d4fa4.netlify.app/login" target="_blank" rel="noopener noreferrer">الدخول للمستخدم</a>
+            <a href="https://gleeful-haupia-3d4fa4.netlify.app/" target="_blank" rel="noopener noreferrer">الدخول للمستخدم</a>
             <a href="/admin/">الدخول لصفحة الإدارة</a>
             
             <div class="footer-links">
                 <a href="https://quran.com/" target="_blank" rel="noopener noreferrer">المصحف الإلكتروني</a> | 
                 <a href="https://quranexplorer.com/" target="_blank" rel="noopener noreferrer">تفسير القرآن</a> | 
-                <a href="https://quran.ksu.edu.sa/" target="_blank" rel="noopener noreferrer">المكتبة القرآنية</a>
+                <a href="https://quran.ksu.edu.sa/" target="_blank" rel="noopener noreferrer">المكتبة القرآنية</a> | 
+                <a href="https://www.qurango.com/" target="_blank" rel="noopener noreferrer">قراءة القرآن</a> | 
+                <a href="https://quranicaudio.com/" target="_blank" rel="noopener noreferrer">استماع للقرآن</a> | 
+                <a href="https://tafsir.com/" target="_blank" rel="noopener noreferrer">تفسير القرآن</a>
             </div>
         </div>
     </body>
