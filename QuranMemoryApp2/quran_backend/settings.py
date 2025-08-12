@@ -126,4 +126,8 @@ ACCOUNT_USERNAME_REQUIRED = True
 
 REST_AUTH = {
     'REGISTER_SERIALIZER': 'api.serializers.CustomRegisterSerializer',
+    CSRF_TRUSTED_ORIGINS = [
+    "https://gleeful-haupia-3d4fa4.netlify.app",
+    "https://quran-app-8ay9.onrender.com",
+]
 }
