@@ -6,10 +6,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-your-secret-key-goes-here'
 DEBUG = True
-ALLOWED_HOSTS = ['quran-app-8ay9.onrender.com',  # الدومين بتاع Render
-    'localhost',
-    '127.0.0.1',
-    '.netlify.app',]
+ALLOWED_HOSTS = [ "quran-app-8ay9.onrender.com",
+    "gleeful-haupia-3d4fa4.netlify.app",
+    "localhost",
+    "127.0.0.1",]
 
 INSTALLED_APPS = [
     'api.apps.ApiConfig',
