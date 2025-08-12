@@ -33,12 +33,16 @@ function LoginPage() {
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>اسم المستخدم</label>
-            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+            <input type="text" value={username}
+              onChange={(e) => setUsername(e.target.value)} required />
           </div>
+
           <div className="form-group">
             <label>كلمة المرور</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <input type="password" value={password}
+              onChange={(e) => setPassword(e.target.value)} required />
           </div>
+
           <button type="submit" className="btn btn-primary">تسجيل الدخول</button>
         </form>
         <p>ليس لديك حساب؟ <Link to="/register">إنشاء حساب جديد</Link></p>
