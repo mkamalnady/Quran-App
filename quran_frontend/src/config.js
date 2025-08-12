@@ -1,7 +1,6 @@
 // رابط الخادم الأساسي
 export const API_BASE_URL = "https://quran-app-8ay9.onrender.com/api";
 
-// جميع المسارات في مكان واحد
 export const ENDPOINTS = {
   auth: {
     login: `${API_BASE_URL}/auth/login/`,
