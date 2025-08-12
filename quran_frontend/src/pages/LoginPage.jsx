@@ -12,11 +12,11 @@ function LoginPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/auth/login/', { username, password });
+            const response = await axios.post('https://quran-app-8ay9.onrender.com/api/auth/login/', { username, password });
             localStorage.setItem('authToken', response.data.key);
             
             const config = { headers: { Authorization: `Token ${response.data.key}` } };
-            const userDetailsResponse = await axios.get('http://127.0.0.1:8000/api/auth/user/', config);
+            const userDetailsResponse = await axios.get('https://quran-app-8ay9.onrender.com/api/auth/user/', config);
             localStorage.setItem('isAdmin', userDetailsResponse.data.is_staff);
             
             navigate('/dashboard');
