@@ -1,3 +1,5 @@
+from django.shortcuts import render
+
 """
 URL configuration for quran_backend project.
 
@@ -26,4 +28,6 @@ urlpatterns = [
     # روابط الـ API الخاصة بتسجيل الدخول والخروج والتسجيل
     path('api/auth/', include('dj_rest_auth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
+    path("", lambda request: render(request, "index.html")),
+
 ]
