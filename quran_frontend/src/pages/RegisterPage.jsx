@@ -31,7 +31,7 @@ function RegisterPage() {
     }
 
     try {
-      await axios.post('http://127.0.0.1:8000/api/auth/registration/', formData);
+      await axios.post('https://quran-app-8ay9.onrender.com/api/auth/registration/', formData);
       navigate('/login', { state: { message: 'تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.' } });
     } catch (err) {
       if (err.response && err.response.data) {
