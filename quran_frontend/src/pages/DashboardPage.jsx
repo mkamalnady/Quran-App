@@ -4,6 +4,7 @@ import Modal from '../components/Modal';
 import SurahReadLink from '../components/SurahReadLink';
 import SurahAudioButton from '../components/SurahAudioButton';
 import SurahTafsirLink from '../components/SurahTafsirLink';
+import AdhkarView from '../components/AdhkarView';
 
 function DashboardPage() {
   const [memorizations, setMemorizations] = useState([]);
@@ -14,6 +15,8 @@ function DashboardPage() {
   const [modalMode, setModalMode] = useState(null);
   const [selectedSurah, setSelectedSurah] = useState(null);
   const [addFormData, setAddFormData] = useState({ start_ayah: '', end_ayah: '' });
+  const [viewMode, setViewMode] = useState("memorization");
+  const [adhkarType, setAdhkarType] = useState("morning");
 
   const fetchData = async () => {
     setLoading(true);
@@ -28,7 +31,7 @@ function DashboardPage() {
       ]);
       setSurahs(surahsResponse.data);
       setMemorizations(memoResponse.data);
-    } catch (err) {
+    } catch {
       setError("حدث خطأ أثناء جلب البيانات. حاول تحديث الصفحة.");
     } finally {
       setLoading(false);
@@ -58,25 +61,6 @@ function DashboardPage() {
     });
   }, [surahs, memorizations]);
 
-  if (loading) {
-    return (
-      <div className="container">
-        <div className="loading-container">
-          <img src="/quran-logo.png" alt="القرآن الكريم" className="loading-logo" />
-          <p>جاري تحميل رحلة حفظك للقرآن الكريم...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container">
-        <p className="error-message">{error}</p>
-      </div>
-    );
-  }
-
   const openModal = (surah, mode) => {
     setSelectedSurah(surah);
     setModalMode(mode);
@@ -96,8 +80,7 @@ function DashboardPage() {
       await axios[method](url, data, config);
       closeModal();
       fetchData();
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("حدث خطأ أثناء حفظ البيانات.");
     }
   };
@@ -121,134 +104,129 @@ function DashboardPage() {
     const { progress } = selectedSurah;
     if (!progress) return;
     const now = new Date();
-    const newHistory = [...(progress.review_history || []), { date: now.toISOString() }];
+    const newHistory = [...(progress.review_history || []), { date: now.toISOString(), type: "مراجعة" }];
     const data = { review_history: newHistory, last_review_date: now.toISOString() };
     handleApiCall('patch', `https://quran-app-8ay9.onrender.com/api/memorization/${progress.id}/`, data);
   };
 
+  if (loading) return <p>جاري التحميل...</p>;
+  if (error) return <p>{error}</p>;
+
   return (
-    <div className="container quran-dashboard">
-      {/* ----- جدول السور ----- */}
-      <div className="surahs-section">
-        <h2 className="section-title">📋 جميع السور الكريمة</h2>
-        <div className="table-responsive">
-          <table className="quran-table">
-            <thead>
-              <tr>
-                <th>رقم</th>
-                <th>اسم السورة</th>
-                <th>النوع</th>
-                <th>الآيات</th>
-                <th>الحالة</th>
-                <th>قراءة</th>
-                <th>استماع</th>
-                <th>تفسير</th>
-                <th>إجراء</th>
-                <th>السجل</th>
-              </tr>
-            </thead>
-            <tbody>
-              {surahProgressData.map(surah => (
-                <tr key={surah.number} className={surah.isDone ? 'completed-row' : ''}>
-                  <td>{surah.number}</td>
-                  <td className="surah-name">{surah.name}</td>
-                  <td>
-                    <span className={`type-badge ${surah.type === 'مدنية' ? 'madni' : 'makki'}`}>
-                      {surah.type}
-                    </span>
-                  </td>
-                  <td>{surah.total_verses}</td>
-                  <td style={{ color: surah.statusColor, fontWeight: 'bold' }}>
-                    {surah.statusText}
-                  </td>
-                  <td>
-                    <SurahReadLink surahNumber={surah.number} surahName={surah.name} />
-                  </td>
-                  <td>
-                    <SurahAudioButton surahNumber={surah.number} surahName={surah.name} />
-                  </td>
-                  <td>
-                    <SurahTafsirLink surahNumber={surah.number} surahName={surah.name} />
-                  </td>
-                  <td>
-                    {surah.isDone ? (
-                      <button onClick={() => openModal(surah, 'review')} className="btn-action btn-review">
-                        🔄 مراجعة
-                      </button>
-                    ) : (
-                      <button onClick={() => openModal(surah, 'add')} className="btn-action btn-add">
-                        ➕ أضف
-                      </button>
-                    )}
-                  </td>
-                  <td>
-                    <button
-                      onClick={() => openModal(surah, 'history')}
-                      className="btn-action btn-history"
-                      disabled={!surah.progress}
-                    >
-                      📈 السجل
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+    <div className="container">
+
+      {/* أزرار رئيسية */}
+      <div className="top-bar">
+        <button className="main-btn" onClick={() => setViewMode("memorization")}>📚 قائمة حفظ القرأن</button>
+        <button className="main-btn" onClick={() => setViewMode("adhkarMenu")}>🕌 أذكار المسلم</button>
       </div>
 
-      {/* ----- المودال ----- */}
+      {viewMode === "adhkarMenu" && (
+        <div className="adhkar-menu-page">
+          <h2>اختر قسم الأذكار</h2>
+          <div className="adhkar-btn-list">
+            <button onClick={() => { setAdhkarType("morning"); setViewMode("adhkar"); }}>🌅 أذكار الصباح</button>
+            <button onClick={() => { setAdhkarType("evening"); setViewMode("adhkar"); }}>🌇 أذكار المساء</button>
+            <button onClick={() => { setAdhkarType("sleep"); setViewMode("adhkar"); }}>🌙 أذكار النوم</button>
+            <button onClick={() => { setAdhkarType("other"); setViewMode("adhkar"); }}>🕌 أذكار أخرى</button>
+          </div>
+          <button className="back-btn" onClick={() => setViewMode("memorization")}>← رجوع</button>
+        </div>
+      )}
+
+      {viewMode === "adhkar" && (
+        <AdhkarView type={adhkarType} onBack={() => setViewMode("adhkarMenu")} />
+      )}
+
+      {viewMode === "memorization" && (
+        <table className="quran-table">
+          <thead>
+            <tr>
+              <th>رقم</th>
+              <th>اسم السورة</th>
+              <th>النوع</th>
+              <th>الآيات</th>
+              <th>الحالة</th>
+              <th>قراءة</th>
+              <th>استماع</th>
+              <th>تفسير</th>
+              <th>إجراء</th>
+              <th>السجل</th>
+            </tr>
+          </thead>
+          <tbody>
+            {surahProgressData.map(surah => (
+              <tr key={surah.number} className={surah.isDone ? 'completed-row' : ''}>
+                <td>{surah.number}</td>
+                <td>{surah.name}</td>
+                <td>{surah.type}</td>
+                <td>{surah.total_verses}</td>
+                <td style={{ color: surah.statusColor }}>{surah.statusText}</td>
+                <td><SurahReadLink surahNumber={surah.number} surahName={surah.name} /></td>
+                <td><SurahAudioButton surahNumber={surah.number} surahName={surah.name} /></td>
+                <td><SurahTafsirLink surahNumber={surah.number} surahName={surah.name} /></td>
+                <td>
+                  {surah.isDone
+                    ? <button className="btn-modern review" onClick={() => openModal(surah, 'review')}>🔄 مراجعة</button>
+                    : <button className="btn-modern add" onClick={() => openModal(surah, 'add')}>➕ أضف</button>}
+                </td>
+                <td>
+                  <button
+                    className="btn-modern history"
+                    disabled={!surah.progress}
+                    onClick={() => openModal(surah, 'history')}
+                  >
+                    📈 السجل
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
       {isModalOpen && selectedSurah && (
         <Modal
           onClose={closeModal}
           title={
             modalMode === 'add'
               ? `📝 إضافة حفظ - سورة ${selectedSurah.name}`
-              : modalMode === 'history'
-              ? `📊 سجل - سورة ${selectedSurah.name}`
-              : `🔄 مراجعة - سورة ${selectedSurah.name}`
+              : modalMode === 'review'
+              ? `🔄 مراجعة - سورة ${selectedSurah.name}`
+              : `📊 السجل - سورة ${selectedSurah.name}`
           }
         >
           {modalMode === 'add' && (
-            <div className="form-vertical">
-              <div className="form-group">
-                <label>من الآية:</label>
-                <input type="number" value={addFormData.start_ayah} disabled />
-              </div>
-              <div className="form-group">
-                <label>إلى الآية:</label>
-                <input
-                  type="number"
-                  value={addFormData.end_ayah}
-                  onChange={e => setAddFormData({ ...addFormData, end_ayah: e.target.value })}
-                  placeholder={`أدخل رقم حتى ${selectedSurah.total_verses}`}
-                />
-              </div>
-              <div className="modal-actions">
-                <button onClick={() => handleSaveMemorization()} className="btn-primary">💾 حفظ الجزء</button>
-                <button onClick={() => handleSaveMemorization(true)} className="btn-success">✨ حفظ السورة كاملة</button>
-              </div>
-            </div>
+            <>
+              <input value={addFormData.start_ayah} disabled />
+              <input
+                value={addFormData.end_ayah}
+                onChange={e => setAddFormData({ ...addFormData, end_ayah: e.target.value })}
+              />
+              <button onClick={() => handleSaveMemorization()}>💾 حفظ الجزء</button>
+              <button onClick={() => handleSaveMemorization(true)}>✨ حفظ السورة كاملة</button>
+            </>
           )}
           {modalMode === 'review' && (
-            <div className="review-modal">
-              <div className="review-icon">🤲</div>
-              <p>هل أنت متأكد من تسجيل مراجعة جديدة لهذه السورة الكريمة؟</p>
-              <div className="modal-actions">
-                <button onClick={handleReview} className="btn-primary">✅ نعم، سجل المراجعة</button>
-                <button onClick={closeModal} className="btn-secondary">❌ إلغاء</button>
-              </div>
-            </div>
+            <button onClick={handleReview}>تأكيد المراجعة</button>
           )}
           {modalMode === 'history' && (
             <div>
-              <h4>📊 تقدم الحفظ:</h4>
               {selectedSurah.progress ? (
-                <div className="history-progress">
-                  <p>🎯 لقد حفظت من الآية <strong>1</strong> إلى الآية <strong>{selectedSurah.progress.end_ayah}</strong></p>
-                </div>
+                <>
+                  <p>📖 الحفظ: حتى الآية {selectedSurah.progress.end_ayah}</p>
+                  {selectedSurah.progress.review_history && selectedSurah.progress.review_history.length > 0 ? (
+                    <ul>
+                      {selectedSurah.progress.review_history.map((entry, idx) => (
+                        <li key={idx}>{new Date(entry.date).toLocaleString()} - {entry.type || 'مراجعة'}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>لا يوجد مراجعات مسجلة</p>
+                  )}
+                </>
               ) : (
-                <p>🚀 لم يتم البدء في حفظ هذه السورة بعد</p>
+                <p>🚀 لم يتم البدء في هذه السورة بعد</p>
               )}
             </div>
           )}
@@ -256,9 +234,28 @@ function DashboardPage() {
       )}
 
       <style jsx>{`
-        .completed-row {
-          background: linear-gradient(135deg, #d4ffe4, #a8f5bc);
+        .completed-row {background: linear-gradient(135deg, #d4ffe4, #a8f5bc);}
+        .top-bar {display: flex; gap: 10px; margin-bottom: 1rem;}
+        .main-btn {
+          flex: 1; padding: 14px; font-size: 1rem; font-weight: bold;
+          background: linear-gradient(135deg,#1e88e5,#3949ab);
+          color: #fff; border: none; border-radius: 12px; cursor: pointer;
         }
+        .btn-modern {
+          padding: 6px 10px;
+          border: none;
+          border-radius: 6px;
+          color: #fff;
+          cursor: pointer;
+          font-weight: 600;
+        }
+        .btn-modern.add {background: linear-gradient(135deg, #00b894, #00a085);}
+        .btn-modern.review {background: linear-gradient(135deg, #1e88e5, #1565c0);}
+        .btn-modern.history {background: linear-gradient(135deg, #ff9800, #f57c00);}
+        .btn-modern:disabled {background: #ccc; cursor: not-allowed;}
+        .adhkar-btn-list {display:flex;flex-direction:column;gap:12px;}
+        .adhkar-btn-list button {padding:14px;background:linear-gradient(135deg,#00b894,#00a085);color:#fff;}
+        .back-btn {margin-top:20px;padding:12px;background:#636e72;color:#fff;border:none;border-radius:8px;}
       `}</style>
     </div>
   );

@@ -1,4 +1,3 @@
-// src/components/Navbar.jsx (الحل النهائي - قائمة صغيرة وسهلة الإغلاق)
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -145,14 +144,12 @@ function Navbar() {
                     {/* الجهة اليسرى - العنوان والتنقل */}
                     <div className="navbar-left">
                         <Link to="/" className="brand-title">
-                            حفظ القرآن الكريم
+                            
                         </Link>
                         
                         {isAuthenticated && (
                             <div className="nav-links">
-                                <Link to="/dashboard" className="nav-link">
-                                    🏠 الرئيسية
-                                </Link>
+                                
 
                                 {/* أزرار القرآن الكريم */}
                                 <button 
@@ -246,37 +243,49 @@ function Navbar() {
                                             </button>
 
                                             {/* الأزرار الأساسية فقط */}
-                                            <div className="mini-actions-list">
-                                                <button 
-                                                    className="mini-action home"
-                                                    onClick={() => handleMenuAction(() => navigate('/dashboard'))}
-                                                >
-                                                    🏠 الرئيسية
-                                                </button>
-                                                
-                                                {isAdmin && (
-                                                    <button 
-                                                        className="mini-action admin"
-                                                        onClick={() => handleMenuAction(() => navigate('/admin/dashboard'))}
-                                                    >
-                                                        ⭐ لوحة المشرف
-                                                    </button>
-                                                )}
+                                          {/* الأزرار الأساسية فقط */}
+<div className="mini-actions-list">
+    <button 
+        className="mini-action home"
+        onClick={() => handleMenuAction(() =>
+            isAdmin ? navigate('/admin/dashboard') : navigate('/dashboard')
+        )}
+    >
+        🏠 الرئيسية
+    </button>
 
-                                                <button 
-                                                    className="mini-action external"
-                                                    onClick={() => handleMenuAction(() => openExternalLink('https://quran.com'))}
-                                                >
-                                                    🎧 استماع للقرآن
-                                                </button>
+    {/* زر تغيير كلمة المرور */}
+    <button 
+        className="mini-action"
+        onClick={() => handleMenuAction(() => navigate('/password/change'))}
+    >
+        🔑 تغيير كلمة المرور
+    </button>
 
-                                                <button 
-                                                    className="mini-action logout"
-                                                    onClick={() => handleMenuAction(handleLogout)}
-                                                >
-                                                    🚪 تسجيل الخروج
-                                                </button>
-                                            </div>
+    {isAdmin && (
+        <button 
+            className="mini-action admin"
+            onClick={() => handleMenuAction(() => navigate('/admin/dashboard'))}
+        >
+            ⭐ لوحة المشرف
+        </button>
+    )}
+
+    <button 
+        className="mini-action external"
+        onClick={() => handleMenuAction(() => openExternalLink('https://quran.com'))}
+    >
+        🎧 استماع للقرآن
+    </button>
+
+    <button 
+        className="mini-action logout"
+        onClick={() => handleMenuAction(handleLogout)}
+    >
+        🚪 تسجيل الخروج
+    </button>
+</div>
+
                                         </div>
                                     )}
                                 </div>
