@@ -3,6 +3,7 @@ import axios from 'axios';
 import Modal from '../components/Modal';
 import SurahReadLink from '../components/SurahReadLink';
 import SurahAudioButton from '../components/SurahAudioButton';
+import SurahTafsirLink from '../components/SurahTafsirLink';
 
 function DashboardPage() {
   const [memorizations, setMemorizations] = useState([]);
@@ -127,8 +128,7 @@ function DashboardPage() {
 
   return (
     <div className="container quran-dashboard">
-      {/* باقي الهيدر والإحصائيات */}
-
+      {/* ----- جدول السور ----- */}
       <div className="surahs-section">
         <h2 className="section-title">📋 جميع السور الكريمة</h2>
         <div className="table-responsive">
@@ -142,6 +142,7 @@ function DashboardPage() {
                 <th>الحالة</th>
                 <th>قراءة</th>
                 <th>استماع</th>
+                <th>تفسير</th>
                 <th>إجراء</th>
                 <th>السجل</th>
               </tr>
@@ -165,6 +166,9 @@ function DashboardPage() {
                   </td>
                   <td>
                     <SurahAudioButton surahNumber={surah.number} surahName={surah.name} />
+                  </td>
+                  <td>
+                    <SurahTafsirLink surahNumber={surah.number} surahName={surah.name} />
                   </td>
                   <td>
                     {surah.isDone ? (
@@ -193,6 +197,7 @@ function DashboardPage() {
         </div>
       </div>
 
+      {/* ----- المودال ----- */}
       {isModalOpen && selectedSurah && (
         <Modal
           onClose={closeModal}
@@ -241,14 +246,6 @@ function DashboardPage() {
               {selectedSurah.progress ? (
                 <div className="history-progress">
                   <p>🎯 لقد حفظت من الآية <strong>1</strong> إلى الآية <strong>{selectedSurah.progress.end_ayah}</strong></p>
-                  <div className="mini-progress-bar">
-                    <div
-                      className="mini-progress-fill"
-                      style={{
-                        width: `${(selectedSurah.progress.end_ayah / selectedSurah.total_verses) * 100}%`
-                      }}
-                    ></div>
-                  </div>
                 </div>
               ) : (
                 <p>🚀 لم يتم البدء في حفظ هذه السورة بعد</p>
