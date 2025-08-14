@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import Modal from '../components/Modal';
+import ProgressStats from '../components/ProgressStats';
+import ReviewReminder from '../components/ReviewReminder';
+import AchievementSystem from '../components/AchievementSystem';
 import SurahReadLink from '../components/SurahReadLink';
 import SurahAudioButton from '../components/SurahAudioButton';
 import SurahTafsirLink from '../components/SurahTafsirLink';
@@ -17,6 +20,8 @@ function DashboardPage() {
   const [addFormData, setAddFormData] = useState({ start_ayah: '', end_ayah: '' });
   const [viewMode, setViewMode] = useState("memorization");
   const [adhkarType, setAdhkarType] = useState("morning");
+  const [dailyGoal, setDailyGoal] = useState(5); // هدف يومي: 5 آيات
+  const [showSettings, setShowSettings] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -115,11 +120,61 @@ function DashboardPage() {
   return (
     <div className="container">
 
+      {viewMode === "memorization" && (
+        <>
+          {/* إحصائيات التقدم */}
+          <ProgressStats memorizations={memorizations} surahs={surahs} />
+          
+          {/* نظام الإنجازات */}
+          <AchievementSystem memorizations={memorizations} surahs={surahs} />
+          
+          {/* تذكيرات المراجعة */}
+          <ReviewReminder 
+            memorizations={memorizations} 
+            surahs={surahs}
+            onReviewSurah={(surah) => openModal(surah, 'review')}
+          />
+        </>
+      )}
+
       {/* أزرار رئيسية */}
       <div className="top-bar">
-        <button className="main-btn" onClick={() => setViewMode("memorization")}>📚 قائمة حفظ القرأن</button>
+        <button className="main-btn" onClick={() => setViewMode("memorization")}>📚 قائمة حفظ القرآن</button>
         <button className="main-btn" onClick={() => setViewMode("adhkarMenu")}>🕌 أذكار المسلم</button>
+        <button className="main-btn settings" onClick={() => setShowSettings(!showSettings)}>⚙️ الإعدادات</button>
       </div>
+
+      {/* إعدادات سريعة */}
+      {showSettings && (
+        <div className="settings-panel">
+          <h3>⚙️ الإعدادات</h3>
+          <div className="setting-item">
+            <label>الهدف اليومي (عدد الآيات):</label>
+            <input 
+              type="number" 
+              value={dailyGoal} 
+              onChange={(e) => setDailyGoal(parseInt(e.target.value) || 5)}
+              min="1" 
+              max="50"
+            />
+          </div>
+          <div className="setting-item">
+            <button onClick={() => {
+              if (confirm('هل تريد تصدير بياناتك؟')) {
+                const data = { memorizations, settings: { dailyGoal } };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'quran-progress.json';
+                a.click();
+              }
+            }}>
+              📤 تصدير البيانات
+            </button>
+          </div>
+        </div>
+      )}
 
       {viewMode === "adhkarMenu" && (
         <div className="adhkar-menu-page">
@@ -237,9 +292,56 @@ function DashboardPage() {
         .completed-row {background: linear-gradient(135deg, #d4ffe4, #a8f5bc);}
         .top-bar {display: flex; gap: 10px; margin-bottom: 1rem;}
         .main-btn {
-          flex: 1; padding: 14px; font-size: 1rem; font-weight: bold;
+          flex: 1; padding: 14px; font-size: 0.95rem; font-weight: bold;
           background: linear-gradient(135deg,#1e88e5,#3949ab);
           color: #fff; border: none; border-radius: 12px; cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .main-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba(30, 136, 229, 0.4);
+        }
+        .main-btn.settings {
+          background: linear-gradient(135deg, #6c757d, #495057);
+          flex: 0.5;
+        }
+        .settings-panel {
+          background: white;
+          border-radius: 12px;
+          padding: 20px;
+          margin-bottom: 20px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          border: 2px solid #e9ecef;
+        }
+        .settings-panel h3 {
+          margin: 0 0 15px 0;
+          color: #495057;
+        }
+        .setting-item {
+          margin-bottom: 15px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .setting-item label {
+          font-weight: bold;
+          color: #495057;
+          min-width: 150px;
+        }
+        .setting-item input {
+          padding: 8px 12px;
+          border: 1px solid #ced4da;
+          border-radius: 6px;
+          width: 80px;
+        }
+        .setting-item button {
+          background: linear-gradient(135deg, #28a745, #20c997);
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: bold;
         }
         .btn-modern {
           padding: 6px 10px;
