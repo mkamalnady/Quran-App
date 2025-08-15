@@ -1,32 +1,51 @@
 // src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext.jsx';
 import Navbar from './components/Navbar';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
+import WelcomePage from './pages/WelcomePage';
+import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
 // مكوّن فرعي للتحكم في إظهار الـ Navbar
 function AppContent() {
   const location = useLocation();
+  const isAuthenticated = !!localStorage.getItem('authToken');
 
-  // تحديد الصفحات التي نخفي فيها الـ Navbar
-  const hideNavbar = location.pathname === '/login' || location.pathname === '/register';
+  // إظهار الـ Navbar فقط للمستخدمين المسجلين
+  const showNavbar = isAuthenticated && 
+    location.pathname !== '/login' && 
+    location.pathname !== '/register' &&
+    location.pathname !== '/';
 
   return (
     <>
-      {!hideNavbar && <Navbar />}
+      {showNavbar && <Navbar />}
       <main>
         <Routes>
+          <Route path="/" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-          <Route path="/password/change" element={<ChangePasswordPage />} />
-          <Route path="/" element={<LoginPage />} />
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/dashboard" element={
+            <ProtectedRoute adminOnly={true}>
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/password/change" element={
+            <ProtectedRoute>
+              <ChangePasswordPage />
+            </ProtectedRoute>
+          } />
         </Routes>
       </main>
     </>
@@ -35,9 +54,11 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
   );
 }
 

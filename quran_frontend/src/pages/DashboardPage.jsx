@@ -108,9 +108,19 @@ function DashboardPage() {
   const handleReview = () => {
     const { progress } = selectedSurah;
     if (!progress) return;
+    
     const now = new Date();
-    const newHistory = [...(progress.review_history || []), { date: now.toISOString(), type: "مراجعة" }];
-    const data = { review_history: newHistory, last_review_date: now.toISOString() };
+    const newHistory = [...(progress.review_history || []), { 
+      date: now.toISOString(), 
+      type: "مراجعة",
+      surah_name: selectedSurah.name 
+    }];
+    
+    const data = { 
+      review_history: newHistory, 
+      last_review_date: now.toISOString() 
+    };
+    
     handleApiCall('patch', `https://quran-app-8ay9.onrender.com/api/memorization/${progress.id}/`, data);
   };
 

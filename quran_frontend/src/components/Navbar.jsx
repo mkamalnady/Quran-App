@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE } from '../config';
 
 function Navbar() {
     const navigate = useNavigate();
@@ -65,7 +66,7 @@ function Navbar() {
         try {
             const token = localStorage.getItem('authToken');
             const config = { headers: { Authorization: `Token ${token}` } };
-            const response = await axios.get('https://quran-app-8ay9.onrender.com/api/auth/user/', config);
+            const response = await axios.get(`${API_BASE}/api/auth/user/`, config);
             setUserInfo(response.data);
         } catch (error) {
             console.error('Failed to fetch user info:', error);

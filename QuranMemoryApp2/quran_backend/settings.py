@@ -126,5 +126,6 @@ ACCOUNT_USERNAME_REQUIRED = True
 
 REST_AUTH = {
     'REGISTER_SERIALIZER': 'api.serializers.CustomRegisterSerializer',
-  
+    'LOGIN_SERIALIZER': 'api.serializers.CustomLoginSerializer',
+    'USER_DETAILS_SERIALIZER': 'api.serializers.UserSerializer',
 }
