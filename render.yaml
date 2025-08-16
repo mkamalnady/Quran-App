@@ -1,25 +1,30 @@
 services:
-  - type: web
-    name: quran-app-backend
-    env: python
-    plan: free
-    pythonVersion: "3.11"
-    buildCommand: pip install -r requirements.txt
-    startCommand: >
-      bash -c "
-      python manage.py migrate &&
-      gunicorn quran_backend.wsgi:application
-      "
-    envVars:
-      - key: DJANGO_SETTINGS_MODULE
-        value: quran_backend.settings
-      - key: DATABASE_URL
-        fromDatabase:
-          name: quran-app-db
-          property: connectionString
+
+type: web
+name: quran-app-backend
+env: python
+plan: free
+buildCommand: |
+pip install -r QuranMemoryApp2/requirements.txt
+cd QuranMemoryApp2 && python manage.py collectstatic --noinput
+startCommand: |
+bash -lc "cd QuranMemoryApp2 && python manage.py migrate && gunicorn quran_backend.wsgi:application"
+envVars:
+
+key: DJANGO_SETTINGS_MODULE
+value: quran_backend.settings
+
+key: SECRET_KEY
+value: change_me_to_a_strong_secret_in_render
+
+key: DATABASE_URL
+fromDatabase:
+name: quran-app-db
+property: connectionString
 
 databases:
-  - name: quran-app-db
-    databaseName: quran_app
-    user: quran_user
-    plan: free
+
+name: quran-app-db
+databaseName: quran_app
+user: quran_user
+plan: free
