@@ -27,13 +27,13 @@ function ReviewReminder({ memorizations, surahs, onReviewSurah }) {
 
         if (daysSinceReview >= 7) {
           priority = 'high';
-          message = `لم تتم مراجعتها منذ ${daysSinceReview} يوم - مراجعة عاجلة!`;
+          message = `⚠️ لم تتم مراجعتها منذ ${daysSinceReview} يوم - مراجعة عاجلة!`;
         } else if (daysSinceReview >= 3) {
           priority = 'medium';
-          message = `لم تتم مراجعتها منذ ${daysSinceReview} أيام`;
+          message = `⏰ لم تتم مراجعتها منذ ${daysSinceReview} أيام`;
         } else if (daysSinceReview >= 1) {
           priority = 'low';
-          message = `آخر مراجعة منذ ${daysSinceReview} يوم`;
+          message = `📅 آخر مراجعة منذ ${daysSinceReview} يوم`;
         }
 
         if (daysSinceReview >= 1) {

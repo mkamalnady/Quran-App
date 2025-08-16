@@ -57,7 +57,9 @@ class MemorizationViewSet(viewsets.ModelViewSet):
         review_entry = {
             'date': now.isoformat(),
             'type': 'مراجعة',
-            'surah_name': memorization.surah.name
+            'surah_name': memorization.surah.name,
+            'user': request.user.username,
+            'verses_reviewed': memorization.end_ayah
         }
         
         if memorization.review_history:
@@ -71,7 +73,8 @@ class MemorizationViewSet(viewsets.ModelViewSet):
         return Response({
             'message': 'تم تسجيل المراجعة بنجاح',
             'last_review_date': memorization.last_review_date,
-            'review_count': len(memorization.review_history)
+            'review_count': len(memorization.review_history),
+            'review_entry': review_entry
         })
 
 # --- بوابة API الجديدة والآمنة للمشرفين فقط ---

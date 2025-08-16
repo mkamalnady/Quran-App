@@ -68,6 +68,15 @@ function ProgressStats({ memorizations, surahs }) {
             <p>مراجعة هذا الأسبوع</p>
             <small>استمر في المراجعة</small>
           </div>
+          <div className="stat-progress">
+            <div className="progress-bar">
+              <div 
+                className="progress-fill" 
+                style={{ width: `${Math.min((recentReviews / 7) * 100, 100)}%` }}
+              ></div>
+            </div>
+            <span className="progress-text">{Math.min(recentReviews, 7)}/7</span>
+          </div>
         </div>
 
         <div className="stat-card info">

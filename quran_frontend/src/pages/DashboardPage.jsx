@@ -109,19 +109,22 @@ function DashboardPage() {
     const { progress } = selectedSurah;
     if (!progress) return;
     
-    const now = new Date();
-    const newHistory = [...(progress.review_history || []), { 
-      date: now.toISOString(), 
-      type: "مراجعة",
-      surah_name: selectedSurah.name 
-    }];
+    // استخدام endpoint المخصص للمراجعة
+    const token = localStorage.getItem('authToken');
+    const config = { headers: { Authorization: `Token ${token}` } };
     
-    const data = { 
-      review_history: newHistory, 
-      last_review_date: now.toISOString() 
-    };
-    
-    handleApiCall('patch', `https://quran-app-8ay9.onrender.com/api/memorization/${progress.id}/`, data);
+    axios.post(
+      `https://quran-app-8ay9.onrender.com/api/memorization/${progress.id}/add_review/`,
+      {},
+      config
+    ).then(() => {
+      closeModal();
+      fetchData();
+      // إظهار رسالة نجاح
+      alert('تم تسجيل المراجعة بنجاح! 🎉');
+    }).catch(() => {
+      alert("حدث خطأ أثناء تسجيل المراجعة.");
+    });
   };
 
   if (loading) return <p>جاري التحميل...</p>;
@@ -225,7 +228,9 @@ function DashboardPage() {
                 <td>{surah.number}</td>
                 <td>{surah.name}</td>
                 <td>{surah.type}</td>
-                <td>{surah.total_verses}</td>
+                <td>
+                  <span className="verse-count">{surah.total_verses} آية</span>
+                </td>
                 <td style={{ color: surah.statusColor }}>{surah.statusText}</td>
                 <td><SurahReadLink surahNumber={surah.number} surahName={surah.name} /></td>
                 <td><SurahAudioButton surahNumber={surah.number} surahName={surah.name} /></td>
@@ -253,45 +258,191 @@ function DashboardPage() {
       {isModalOpen && selectedSurah && (
         <Modal
           onClose={closeModal}
+          size={modalMode === 'history' ? 'large' : 'medium'}
           title={
             modalMode === 'add'
-              ? `📝 إضافة حفظ - سورة ${selectedSurah.name}`
+              ? `📝 إضافة حفظ - سورة ${selectedSurah.name} (${selectedSurah.total_verses} آية)`
               : modalMode === 'review'
-              ? `🔄 مراجعة - سورة ${selectedSurah.name}`
-              : `📊 السجل - سورة ${selectedSurah.name}`
+              ? `🔄 مراجعة - سورة ${selectedSurah.name} (${selectedSurah.total_verses} آية)`
+              : `📊 السجل - سورة ${selectedSurah.name} (${selectedSurah.total_verses} آية)`
           }
         >
           {modalMode === 'add' && (
-            <>
-              <input value={addFormData.start_ayah} disabled />
-              <input
-                value={addFormData.end_ayah}
-                onChange={e => setAddFormData({ ...addFormData, end_ayah: e.target.value })}
-              />
-              <button onClick={() => handleSaveMemorization()}>💾 حفظ الجزء</button>
-              <button onClick={() => handleSaveMemorization(true)}>✨ حفظ السورة كاملة</button>
-            </>
-          )}
-          {modalMode === 'review' && (
-            <button onClick={handleReview}>تأكيد المراجعة</button>
-          )}
-          {modalMode === 'history' && (
-            <div>
-              {selectedSurah.progress ? (
-                <>
-                  <p>📖 الحفظ: حتى الآية {selectedSurah.progress.end_ayah}</p>
-                  {selectedSurah.progress.review_history && selectedSurah.progress.review_history.length > 0 ? (
-                    <ul>
-                      {selectedSurah.progress.review_history.map((entry, idx) => (
-                        <li key={idx}>{new Date(entry.date).toLocaleString()} - {entry.type || 'مراجعة'}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p>لا يوجد مراجعات مسجلة</p>
+            <div className="add-memorization-form">
+              <div className="surah-info">
+                <h4>معلومات السورة</h4>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <span className="label">اسم السورة:</span>
+                    <span className="value">{selectedSurah.name}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">عدد الآيات:</span>
+                    <span className="value">{selectedSurah.total_verses} آية</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">النوع:</span>
+                    <span className="value">{selectedSurah.type}</span>
+                  </div>
+                  {selectedSurah.progress && (
+                    <div className="info-item">
+                      <span className="label">محفوظ حتى:</span>
+                      <span className="value">الآية {selectedSurah.progress.end_ayah}</span>
+                    </div>
                   )}
-                </>
+                </div>
+              </div>
+              
+              <div className="form-section">
+                <h4>إضافة حفظ جديد</h4>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>من الآية:</label>
+                    <input 
+                      type="number" 
+                      value={addFormData.start_ayah} 
+                      disabled 
+                      className="disabled-input"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>إلى الآية:</label>
+                    <input
+                      type="number"
+                      value={addFormData.end_ayah}
+                      onChange={e => setAddFormData({ ...addFormData, end_ayah: e.target.value })}
+                      placeholder={`أدخل رقم من ${addFormData.start_ayah} إلى ${selectedSurah.total_verses}`}
+                      min={addFormData.start_ayah}
+                      max={selectedSurah.total_verses}
+                    />
+                  </div>
+                </div>
+                
+                <div className="progress-preview">
+                  {addFormData.end_ayah && (
+                    <div className="preview-info">
+                      <span>ستحفظ: {parseInt(addFormData.end_ayah) - parseInt(addFormData.start_ayah) + 1} آية</span>
+                      <div className="progress-bar">
+                        <div 
+                          className="progress-fill" 
+                          style={{ width: `${(parseInt(addFormData.end_ayah) / selectedSurah.total_verses) * 100}%` }}
+                        ></div>
+                      </div>
+                      <span className="progress-text">
+                        {Math.round((parseInt(addFormData.end_ayah) / selectedSurah.total_verses) * 100)}% من السورة
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="action-buttons">
+                <button 
+                  className="btn-save-part" 
+                  onClick={() => handleSaveMemorization()}
+                  disabled={!addFormData.end_ayah}
+                >
+                  💾 حفظ الجزء المحدد
+                </button>
+                <button 
+                  className="btn-save-complete" 
+                  onClick={() => handleSaveMemorization(true)}
+                >
+                  ✨ حفظ السورة كاملة ({selectedSurah.total_verses} آية)
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {modalMode === 'review' && (
+            <div className="review-form">
+              <div className="review-info">
+                <h4>مراجعة سورة {selectedSurah.name}</h4>
+                <div className="review-details">
+                  <p><strong>عدد الآيات:</strong> {selectedSurah.total_verses} آية</p>
+                  <p><strong>محفوظ حتى:</strong> الآية {selectedSurah.progress?.end_ayah}</p>
+                  {selectedSurah.progress?.last_review_date && (
+                    <p><strong>آخر مراجعة:</strong> {new Date(selectedSurah.progress.last_review_date).toLocaleDateString('ar-SA')}</p>
+                  )}
+                </div>
+              </div>
+              <div className="review-actions">
+                <button className="btn-confirm-review" onClick={handleReview}>
+                  ✅ تأكيد المراجعة
+                </button>
+                <p className="review-note">
+                  سيتم تسجيل هذه المراجعة في سجل المراجعات الخاص بك
+                </p>
+              </div>
+            </div>
+          )}
+          
+          {modalMode === 'history' && (
+            <div className="history-view">
+              {selectedSurah.progress ? (
+                <div className="history-content">
+                  <div className="memorization-status">
+                    <h4>حالة الحفظ</h4>
+                    <div className="status-card">
+                      <div className="status-item">
+                        <span className="status-label">محفوظ حتى:</span>
+                        <span className="status-value">الآية {selectedSurah.progress.end_ayah} من {selectedSurah.total_verses}</span>
+                      </div>
+                      <div className="progress-bar">
+                        <div 
+                          className="progress-fill" 
+                          style={{ width: `${(selectedSurah.progress.end_ayah / selectedSurah.total_verses) * 100}%` }}
+                        ></div>
+                      </div>
+                      <div className="status-item">
+                        <span className="status-label">نسبة الإكمال:</span>
+                        <span className="status-value">
+                          {Math.round((selectedSurah.progress.end_ayah / selectedSurah.total_verses) * 100)}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="review-history">
+                    <h4>سجل المراجعات</h4>
+                    {selectedSurah.progress.review_history && selectedSurah.progress.review_history.length > 0 ? (
+                      <div className="history-list">
+                        {selectedSurah.progress.review_history
+                          .sort((a, b) => new Date(b.date) - new Date(a.date))
+                          .map((entry, idx) => (
+                          <div key={idx} className="history-item">
+                            <div className="history-date">
+                              {new Date(entry.date).toLocaleDateString('ar-SA', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                            <div className="history-type">
+                              🔄 {entry.type || 'مراجعة'}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="no-reviews">
+                        <p>📝 لا يوجد مراجعات مسجلة بعد</p>
+                        <p>ابدأ بمراجعة هذه السورة لتسجيل أول مراجعة</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               ) : (
-                <p>🚀 لم يتم البدء في هذه السورة بعد</p>
+                <div className="no-progress">
+                  <h4>🚀 لم يتم البدء في هذه السورة بعد</h4>
+                  <p>ابدأ بحفظ هذه السورة لرؤية السجل والإحصائيات</p>
+                  <div className="surah-details">
+                    <p><strong>عدد الآيات:</strong> {selectedSurah.total_verses} آية</p>
+                    <p><strong>النوع:</strong> {selectedSurah.type}</p>
+                  </div>
+                </div>
               )}
             </div>
           )}
@@ -299,6 +450,287 @@ function DashboardPage() {
       )}
 
       <style jsx>{`
+        .add-memorization-form {
+          padding: 20px;
+        }
+        
+        .surah-info {
+          background: #f8f9fa;
+          padding: 15px;
+          border-radius: 10px;
+          margin-bottom: 20px;
+        }
+        
+        .surah-info h4 {
+          margin: 0 0 15px 0;
+          color: #2c3e50;
+          text-align: center;
+        }
+        
+        .info-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+        }
+        
+        .info-item {
+          display: flex;
+          justify-content: space-between;
+          padding: 8px;
+          background: white;
+          border-radius: 5px;
+        }
+        
+        .label {
+          font-weight: bold;
+          color: #666;
+        }
+        
+        .value {
+          color: #2c3e50;
+          font-weight: 600;
+        }
+        
+        .form-section h4 {
+          margin: 0 0 15px 0;
+          color: #2c3e50;
+        }
+        
+        .form-row {
+          display: flex;
+          gap: 15px;
+          margin-bottom: 15px;
+        }
+        
+        .form-group {
+          flex: 1;
+        }
+        
+        .form-group label {
+          display: block;
+          margin-bottom: 5px;
+          font-weight: bold;
+          color: #555;
+        }
+        
+        .form-group input {
+          width: 100%;
+          padding: 10px;
+          border: 2px solid #e1e8ed;
+          border-radius: 8px;
+          font-size: 1rem;
+          transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus {
+          outline: none;
+          border-color: #667eea;
+        }
+        
+        .disabled-input {
+          background: #f8f9fa !important;
+          color: #6c757d !important;
+        }
+        
+        .progress-preview {
+          margin: 15px 0;
+          padding: 15px;
+          background: #e8f5e8;
+          border-radius: 8px;
+          border: 1px solid #c3e6cb;
+        }
+        
+        .preview-info {
+          text-align: center;
+        }
+        
+        .progress-bar {
+          height: 8px;
+          background: #dee2e6;
+          border-radius: 4px;
+          margin: 10px 0;
+          overflow: hidden;
+        }
+        
+        .progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #28a745, #20c997);
+          transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+          font-size: 0.9rem;
+          color: #155724;
+          font-weight: bold;
+        }
+        
+        .action-buttons {
+          display: flex;
+          gap: 10px;
+          margin-top: 20px;
+        }
+        
+        .btn-save-part, .btn-save-complete {
+          flex: 1;
+          padding: 12px;
+          border: none;
+          border-radius: 8px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        
+        .btn-save-part {
+          background: linear-gradient(135deg, #17a2b8, #138496);
+          color: white;
+        }
+        
+        .btn-save-complete {
+          background: linear-gradient(135deg, #28a745, #20c997);
+          color: white;
+        }
+        
+        .btn-save-part:hover, .btn-save-complete:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-save-part:disabled {
+          background: #6c757d;
+          cursor: not-allowed;
+          transform: none;
+        }
+        
+        .review-form {
+          padding: 20px;
+          text-align: center;
+        }
+        
+        .review-info h4 {
+          margin: 0 0 20px 0;
+          color: #2c3e50;
+        }
+        
+        .review-details {
+          background: #f8f9fa;
+          padding: 15px;
+          border-radius: 8px;
+          margin-bottom: 20px;
+          text-align: right;
+        }
+        
+        .review-details p {
+          margin: 8px 0;
+          color: #495057;
+        }
+        
+        .btn-confirm-review {
+          background: linear-gradient(135deg, #28a745, #20c997);
+          color: white;
+          border: none;
+          padding: 15px 30px;
+          border-radius: 25px;
+          font-size: 1.1rem;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          margin-bottom: 15px;
+        }
+        
+        .btn-confirm-review:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .review-note {
+          color: #6c757d;
+          font-size: 0.9rem;
+          margin: 0;
+        }
+        
+        .history-view {
+          padding: 20px;
+        }
+        
+        .history-content h4 {
+          margin: 0 0 15px 0;
+          color: #2c3e50;
+          border-bottom: 2px solid #e9ecef;
+          padding-bottom: 10px;
+        }
+        
+        .status-card {
+          background: #f8f9fa;
+          padding: 15px;
+          border-radius: 10px;
+          margin-bottom: 20px;
+        }
+        
+        .status-item {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 10px;
+        }
+        
+        .status-label {
+          font-weight: bold;
+          color: #666;
+        }
+        
+        .status-value {
+          color: #2c3e50;
+          font-weight: 600;
+        }
+        
+        .history-list {
+          max-height: 300px;
+          overflow-y: auto;
+        }
+        
+        .history-item {
+          background: white;
+          border: 1px solid #e9ecef;
+          border-radius: 8px;
+          padding: 12px;
+          margin-bottom: 10px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        
+        .history-date {
+          color: #6c757d;
+          font-size: 0.9rem;
+        }
+        
+        .history-type {
+          color: #28a745;
+          font-weight: bold;
+        }
+        
+        .no-reviews, .no-progress {
+          text-align: center;
+          padding: 30px;
+          color: #6c757d;
+        }
+        
+        .no-progress h4 {
+          color: #2c3e50;
+          margin-bottom: 15px;
+        }
+        
+        .surah-details {
+          background: #f8f9fa;
+          padding: 15px;
+          border-radius: 8px;
+          margin-top: 20px;
+        }
+        
+        .surah-details p {
+          margin: 8px 0;
+          color: #495057;
+        }
+        
         .completed-row {background: linear-gradient(135deg, #d4ffe4, #a8f5bc);}
         .top-bar {display: flex; gap: 10px; margin-bottom: 1rem;}
         .main-btn {
@@ -368,6 +800,19 @@ function DashboardPage() {
         .adhkar-btn-list {display:flex;flex-direction:column;gap:12px;}
         .adhkar-btn-list button {padding:14px;background:linear-gradient(135deg,#00b894,#00a085);color:#fff;}
         .back-btn {margin-top:20px;padding:12px;background:#636e72;color:#fff;border:none;border-radius:8px;}
+        
+        .verse-count {
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          color: white;
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 0.85rem;
+          font-weight: bold;
+        }
+        
+        .quran-table td {
+          vertical-align: middle;
+        }
       `}</style>
     </div>
   );
