@@ -1,13 +1,16 @@
-# D:\QuranMemoryApp2\quran_backend\settings.py
+# quran_backend/settings.py
 
 import os
-import dj_database_url
 from pathlib import Path
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-your-secret-key-goes-here'
-DEBUG = True
+# تحذير: عدّل السر في الإنتاج من المتغيرات البيئية
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-goes-here')
+
+# في الإنتاج اجعلها False
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('1', 'true', 'yes')
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -57,7 +60,7 @@ ROOT_URLCONF = 'quran_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [],  # أضف مسارات قوالب إذا لديك
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -73,14 +76,16 @@ TEMPLATES = [
 WSGI_APPLICATION = 'quran_backend.wsgi.application'
 
 # --- Database ---
+# استخدم DATABASE_URL من البيئة (Render يضبطه تلقائيًا)
 DATABASES = {
-    'default': dj_database_url.parse(
-        "postgresql://quran_app_db_user:iGLQNo2XwRIG0tHXaQg2Z9D9Br414YNP@dpg-d2fofpbe5dus73b163g0-a/quran_app_db",
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL', ''),
         conn_max_age=600,
-        conn_health_checks=True
+        conn_health_checks=True,
     )
 }
 
+# --- Password validation ---
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -88,19 +93,24 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# --- Internationalization ---
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+# --- Static files ---
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+# تحسين تقديم الملفات الثابتة على Render
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# --- Additional Settings ---
-SITE_ID = 1
+# --- Sites Framework ---
+SITE_ID = int(os.getenv('SITE_ID', '1'))
 
+# --- CORS ---
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
@@ -108,6 +118,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://quran-app-8ay9.onrender.com",
 ]
 
+# --- DRF ---
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
@@ -117,11 +128,13 @@ REST_FRAMEWORK = {
     ],
 }
 
+# --- Authentication backends (Django + allauth) ---
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 
+# --- allauth / dj-rest-auth settings ---
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 ACCOUNT_EMAIL_REQUIRED = True
