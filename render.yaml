@@ -3,15 +3,14 @@ services:
     name: quran-app-backend
     env: python
     plan: free
+    pythonVersion: "3.11"
     buildCommand: pip install -r requirements.txt
     startCommand: >
-      bash -lc "
+      bash -c "
       python manage.py migrate &&
       gunicorn quran_backend.wsgi:application
       "
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11
       - key: DJANGO_SETTINGS_MODULE
         value: quran_backend.settings
       - key: DATABASE_URL
