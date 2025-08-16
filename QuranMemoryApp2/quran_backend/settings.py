@@ -5,10 +5,10 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# استخدم مفتاح سرّي حقيقي من متغير بيئة في الإنتاج
+# مفتاح سرّي (غيّره في الإنتاج بمتغير بيئة)
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-goes-here')
 
-# اجعلها False في الإنتاج عبر متغير بيئة
+# وضع التصحيح (False في الإنتاج)
 DEBUG = os.getenv('DEBUG', 'False').lower() in ('1', 'true', 'yes')
 
 ALLOWED_HOSTS = [
@@ -19,6 +19,8 @@ ALLOWED_HOSTS = [
 ]
 
 INSTALLED_APPS = [
+    'jazzmin',  # Jazzmin يجب أن يكون قبل admin
+
     'api.apps.ApiConfig',
 
     'django.contrib.admin',
@@ -59,7 +61,7 @@ ROOT_URLCONF = 'quran_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],  # يمكنك إضافة مسارات القوالب هنا
+        'DIRS': [],  # أضف مسارات القوالب إن لزم
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -75,14 +77,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'quran_backend.wsgi.application'
 
 # --- Database ---
-# سيقرأ من متغير البيئة DATABASE_URL الذي يحقنه Render تلقائياً
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', ''),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
+# إنتاج: يستخدم DATABASE_URL (من Render)
+# محلي: يستخدم SQLite إن لم يوجد DATABASE_URL
+if os.environ.get('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ['DATABASE_URL'],
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # --- Password validation ---
 AUTH_PASSWORD_VALIDATORS = [
