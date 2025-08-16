@@ -3,14 +3,12 @@ services:
     name: quran-app-backend
     env: python
     plan: free
-    buildCommand: |
-      pip install -r requirements.txt
-      cd QuranMemoryApp2
-      python manage.py collectstatic --noinput
-    startCommand: |
-      cd QuranMemoryApp2
-      python manage.py migrate --noinput
+    buildCommand: pip install -r requirements.txt
+    startCommand: >
+      bash -lc "
+      python manage.py migrate &&
       gunicorn quran_backend.wsgi:application
+      "
     envVars:
       - key: PYTHON_VERSION
         value: 3.11
