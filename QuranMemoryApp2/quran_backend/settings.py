@@ -7,7 +7,7 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # غيّر المفتاح في الإنتاج بمتغير بيئة
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-goes-here')
+SECRET_KEY = os.getenv('SECRET_KEY', 'postgresql://quran_app_db_user:iGLQNo2XwRIG0tHXaQg2Z9D9Br414YNP@dpg-d2fofpbe5dus73b163g0-a/quran_app_db')
 
 # اجعلها False في الإنتاج
 DEBUG = os.getenv('DEBUG', 'False').lower() in ('1', 'true', 'yes')
