@@ -1,4 +1,4 @@
-# D:\QuranMemoryApp2\quran_backend\settings.py (النسخة النهائية الكاملة)
+# D:\QuranMemoryApp2\quran_backend\settings.py (النسخة النهائية المعدلة)
 
 import os
 import dj_database_url
@@ -6,12 +6,12 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-your-secret-key-goes-here'
-DEBUG = True
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-your-secret-key-goes-here')
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
+    "localhost",
+    "127.0.0.1",
     "gleeful-haupia-3d4fa4.netlify.app",
     "quran-app-8ay9.onrender.com",
 ]
@@ -72,7 +72,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'quran_backend.wsgi.application'
 
-# Database configuration for Render
+# قاعدة البيانات
 DATABASES = {
     'default': dj_database_url.config(
         default=f'sqlite:///{BASE_DIR}/db.sqlite3',
@@ -81,9 +81,10 @@ DATABASES = {
     )
 }
 
-# Production database settings for Render
-if 'DATABASE_URL' in os.environ:
+# إذا فيه DATABASE_URL في Environment → يستخدمه
+if os.environ.get('DATABASE_URL'):
     DATABASES['default'] = dj_database_url.config(
+        default=os.environ['DATABASE_URL'],
         conn_max_age=600,
         conn_health_checks=True,
     )
@@ -102,10 +103,11 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# --- الإعدادات الإضافية ---
+# إعدادات إضافية
 SITE_ID = 1
 
 CORS_ALLOWED_ORIGINS = [
@@ -139,3 +141,5 @@ REST_AUTH = {
     'LOGIN_SERIALIZER': 'api.serializers.CustomLoginSerializer',
     'USER_DETAILS_SERIALIZER': 'api.serializers.UserSerializer',
 }
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
