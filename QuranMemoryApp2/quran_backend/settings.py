@@ -1,4 +1,4 @@
-# D:\QuranMemoryApp2\quran_backend\settings.py (النسخة النهائية المعدلة)
+# D:\QuranMemoryApp2\quran_backend\settings.py
 
 import os
 import dj_database_url
@@ -6,8 +6,8 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-your-secret-key-goes-here')
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+SECRET_KEY = 'django-insecure-your-secret-key-goes-here'
+DEBUG = True
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -72,22 +72,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'quran_backend.wsgi.application'
 
-# قاعدة البيانات
+# --- Database ---
 DATABASES = {
-    'default': dj_database_url.config(
-        default=f'sqlite:///{BASE_DIR}/db.sqlite3',
+    'default': dj_database_url.parse(
+        "postgresql://quran_app_db_user:iGLQNo2XwRIG0tHXaQg2Z9D9Br414YNP@dpg-d2fofpbe5dus73b163g0-a/quran_app_db",
         conn_max_age=600,
-        conn_health_checks=True,
+        conn_health_checks=True
     )
 }
-
-# إذا فيه DATABASE_URL في Environment → يستخدمه
-if os.environ.get('DATABASE_URL'):
-    DATABASES['default'] = dj_database_url.config(
-        default=os.environ['DATABASE_URL'],
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -103,11 +95,10 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# إعدادات إضافية
+# --- Additional Settings ---
 SITE_ID = 1
 
 CORS_ALLOWED_ORIGINS = [
@@ -141,5 +132,3 @@ REST_AUTH = {
     'LOGIN_SERIALIZER': 'api.serializers.CustomLoginSerializer',
     'USER_DETAILS_SERIALIZER': 'api.serializers.UserSerializer',
 }
-
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
