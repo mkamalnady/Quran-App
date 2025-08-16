@@ -1,15 +1,14 @@
 # quran_backend/settings.py
-
 import os
 from pathlib import Path
 import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# غيّر المفتاح في الإنتاج بمتغير بيئة
-SECRET_KEY = os.getenv('SECRET_KEY', 'postgresql://quran_app_db_user:iGLQNo2XwRIG0tHXaQg2Z9D9Br414YNP@dpg-d2fofpbe5dus73b163g0-a/quran_app_db')
+# استخدم مفتاح سرّي حقيقي من متغير بيئة في الإنتاج
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-goes-here')
 
-# اجعلها False في الإنتاج
+# اجعلها False في الإنتاج عبر متغير بيئة
 DEBUG = os.getenv('DEBUG', 'False').lower() in ('1', 'true', 'yes')
 
 ALLOWED_HOSTS = [
@@ -76,9 +75,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'quran_backend.wsgi.application'
 
 # --- Database ---
+# سيقرأ من متغير البيئة DATABASE_URL الذي يحقنه Render تلقائياً
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', ''),  # Render سيحقن قيمة صحيحة
+        default=os.getenv('DATABASE_URL', ''),
         conn_max_age=600,
         conn_health_checks=True,
     )
@@ -117,4 +117,11 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # --- DRF ---
-REST_FRAMEWORK =
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+}
