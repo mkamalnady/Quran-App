@@ -6,10 +6,10 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# تحذير: عدّل السر في الإنتاج من المتغيرات البيئية
+# غيّر المفتاح في الإنتاج بمتغير بيئة
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-goes-here')
 
-# في الإنتاج اجعلها False
+# اجعلها False في الإنتاج
 DEBUG = os.getenv('DEBUG', 'False').lower() in ('1', 'true', 'yes')
 
 ALLOWED_HOSTS = [
@@ -60,7 +60,7 @@ ROOT_URLCONF = 'quran_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],  # أضف مسارات قوالب إذا لديك
+        'DIRS': [],  # يمكنك إضافة مسارات القوالب هنا
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -76,10 +76,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'quran_backend.wsgi.application'
 
 # --- Database ---
-# استخدم DATABASE_URL من البيئة (Render يضبطه تلقائيًا)
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', ''),
+        default=os.getenv('DATABASE_URL', ''),  # Render سيحقن قيمة صحيحة
         conn_max_age=600,
         conn_health_checks=True,
     )
@@ -102,7 +101,6 @@ USE_TZ = True
 # --- Static files ---
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-# تحسين تقديم الملفات الثابتة على Render
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -119,29 +117,4 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # --- DRF ---
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
-    ],
-}
-
-# --- Authentication backends (Django + allauth) ---
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
-)
-
-# --- allauth / dj-rest-auth settings ---
-ACCOUNT_EMAIL_VERIFICATION = 'none'
-ACCOUNT_AUTHENTICATION_METHOD = 'username'
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = True
-
-REST_AUTH = {
-    'REGISTER_SERIALIZER': 'api.serializers.CustomRegisterSerializer',
-    'LOGIN_SERIALIZER': 'api.serializers.CustomLoginSerializer',
-    'USER_DETAILS_SERIALIZER': 'api.serializers.UserSerializer',
-}
+REST_FRAMEWORK =
