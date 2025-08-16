@@ -7,9 +7,9 @@ services:
   buildCommand: |
     # تحديث pip أولًا
     python -m pip install --upgrade pip
-    # تثبيت كل المكتبات من requirements.txt
+    # تثبيت كل المكتبات من requirements.txt داخل QuranMemoryApp2
     pip install -r QuranMemoryApp2/requirements.txt
-    # التأكد من تثبيت jazzmin حتى لو مش موجود في requirements
+    # التأكد من تثبيت jazzmin
     pip install jazzmin
     # تجميع الملفات الثابتة
     cd QuranMemoryApp2 && python manage.py collectstatic --noinput
