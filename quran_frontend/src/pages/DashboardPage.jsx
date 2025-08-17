@@ -278,7 +278,7 @@ function DashboardPage() {
                   </div>
                   <div className="info-item">
                     <span className="label">عدد الآيات:</span>
-                    <span className="value">{selectedSurah.total_verses} آية</span>
+                    <span className="value highlight-verses">{selectedSurah.total_verses} آية</span>
                   </div>
                   <div className="info-item">
                     <span className="label">النوع:</span>
@@ -348,7 +348,10 @@ function DashboardPage() {
                   className="btn-save-complete" 
                   onClick={() => handleSaveMemorization(true)}
                 >
-                  ✨ حفظ السورة كاملة ({selectedSurah.total_verses} آية)
+                  ✨ حفظ السورة كاملة 
+                  <div className="complete-info">
+                    ({selectedSurah.total_verses} آية - {selectedSurah.name})
+                  </div>
                 </button>
               </div>
             </div>
@@ -359,10 +362,23 @@ function DashboardPage() {
               <div className="review-info">
                 <h4>مراجعة سورة {selectedSurah.name}</h4>
                 <div className="review-details">
-                  <p><strong>عدد الآيات:</strong> {selectedSurah.total_verses} آية</p>
-                  <p><strong>محفوظ حتى:</strong> الآية {selectedSurah.progress?.end_ayah}</p>
+                  <div className="review-detail-item">
+                    <span className="detail-label">📖 عدد الآيات:</span>
+                    <span className="detail-value highlight-verses">{selectedSurah.total_verses} آية</span>
+                  </div>
+                  <div className="review-detail-item">
+                    <span className="detail-label">✅ محفوظ حتى:</span>
+                    <span className="detail-value">الآية {selectedSurah.progress?.end_ayah}</span>
+                  </div>
+                  <div className="review-detail-item">
+                    <span className="detail-label">📊 نسبة الإكمال:</span>
+                    <span className="detail-value">{Math.round((selectedSurah.progress?.end_ayah / selectedSurah.total_verses) * 100)}%</span>
+                  </div>
                   {selectedSurah.progress?.last_review_date && (
-                    <p><strong>آخر مراجعة:</strong> {new Date(selectedSurah.progress.last_review_date).toLocaleDateString('ar-SA')}</p>
+                    <div className="review-detail-item">
+                      <span className="detail-label">🕐 آخر مراجعة:</span>
+                      <span className="detail-value">{new Date(selectedSurah.progress.last_review_date).toLocaleDateString('ar-SA')}</span>
+                    </div>
                   )}
                 </div>
               </div>
@@ -411,6 +427,15 @@ function DashboardPage() {
                           .sort((a, b) => new Date(b.date) - new Date(a.date))
                           .map((entry, idx) => (
                           <div key={idx} className="history-item">
+                            <div className="history-content">
+                              <div className="history-main">
+                                <span className="history-type">🔄 {entry.type || 'مراجعة'}</span>
+                                {entry.completion_percentage && (
+                                  <span className="completion-badge">
+                                    {entry.completion_percentage}% مكتملة
+                                  </span>
+                                )}
+                              </div>
                             <div className="history-date">
                               {new Date(entry.date).toLocaleDateString('ar-SA', {
                                 year: 'numeric',
@@ -420,8 +445,13 @@ function DashboardPage() {
                                 minute: '2-digit'
                               })}
                             </div>
-                            <div className="history-type">
-                              🔄 {entry.type || 'مراجعة'}
+                            {entry.verses_reviewed && entry.total_verses && (
+                              <div className="verses-info">
+                                <small>
+                                  📖 {entry.verses_reviewed} من {entry.total_verses} آية
+                                </small>
+                              </div>
+                            )}
                             </div>
                           </div>
                         ))}
@@ -439,8 +469,21 @@ function DashboardPage() {
                   <h4>🚀 لم يتم البدء في هذه السورة بعد</h4>
                   <p>ابدأ بحفظ هذه السورة لرؤية السجل والإحصائيات</p>
                   <div className="surah-details">
-                    <p><strong>عدد الآيات:</strong> {selectedSurah.total_verses} آية</p>
-                    <p><strong>النوع:</strong> {selectedSurah.type}</p>
+                    <div className="detail-card">
+                      <div className="detail-item">
+                        <span className="detail-icon">📖</span>
+                        <span className="detail-text">
+                          <strong>عدد الآيات:</strong> 
+                          <span className="highlight-verses">{selectedSurah.total_verses} آية</span>
+                        </span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-icon">🏷️</span>
+                        <span className="detail-text">
+                          <strong>النوع:</strong> {selectedSurah.type}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

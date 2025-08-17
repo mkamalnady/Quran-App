@@ -173,6 +173,17 @@ def home(request):
                 transform: translateY(-3px);
                 box-shadow: 0 14px 26px rgba(27,94,32,0.45);
             }
+            
+            a.btn.secondary {
+                background: linear-gradient(90deg, #3498db, #2980b9);
+                border: 2px solid rgba(52,152,219,0.7);
+                box-shadow: 0 6px 12px rgba(52,152,219,0.35);
+            }
+            
+            a.btn.secondary:hover {
+                background: linear-gradient(90deg, #2980b9, #1f4e79);
+                box-shadow: 0 14px 26px rgba(52,152,219,0.45);
+            }
 
             /* آية ثابتة داخل الصندوق (غير المسطرة) */
             #ayat {
@@ -262,7 +273,7 @@ def home(request):
                 </header>
 
                 <div class="actions">
-                    <a class="btn" href="https://gleeful-haupia-3d4fa4.netlify.app/" target="_blank" rel="noopener noreferrer">الدخول للمستخدم</a>
+                    <a class="btn" href="https://gleeful-haupia-3d4fa4.netlify.app/login" target="_blank" rel="noopener noreferrer">الدخول للمستخدم</a>
                     <a class="btn" href="/admin/">الدخول لصفحة الإدارة</a>
                 </div>
 

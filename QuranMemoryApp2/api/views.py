@@ -58,8 +58,11 @@ class MemorizationViewSet(viewsets.ModelViewSet):
             'date': now.isoformat(),
             'type': 'مراجعة',
             'surah_name': memorization.surah.name,
+            'surah_number': memorization.surah.number,
             'user': request.user.username,
-            'verses_reviewed': memorization.end_ayah
+            'verses_reviewed': memorization.end_ayah,
+            'total_verses': memorization.surah.total_verses,
+            'completion_percentage': round((memorization.end_ayah / memorization.surah.total_verses) * 100, 1)
         }
         
         if memorization.review_history:

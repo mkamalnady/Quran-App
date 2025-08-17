@@ -80,14 +80,26 @@ ASGI_APPLICATION = 'quran_backend.asgi.application'
 # Database: PostgreSQL في الإنتاج، SQLite محليًا فقط إذا لم يوجد DATABASE_URL
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 if DATABASE_URL:
+    # استخدام قاعدة البيانات PostgreSQL على Render
     DATABASES = {
         "default": dj_database_url.config(
-            env="DATABASE_URL",
+            default=DATABASE_URL,
             conn_max_age=600,
-            ssl_require=True
+            ssl_require=True,
+            conn_health_checks=True,
+            options={
+                'sslmode': 'require',
+            }
         )
     }
+    
+    # تأكد من أن الاتصال يعمل بشكل صحيح
+    DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
+    DATABASES['default']['TEST'] = {
+        'NAME': 'test_quran_app',
+    }
 else:
+    # استخدام SQLite للتطوير المحلي فقط
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
