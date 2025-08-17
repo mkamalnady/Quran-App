@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'quran_backend.wsgi.application'
 ASGI_APPLICATION = 'quran_backend.asgi.application'
 
 # Database: PostgreSQL في الإنتاج، SQLite محليًا فقط إذا لم يوجد DATABASE_URL
-DATABASE_URL = os.getenv("DATABASE_URL", "")
+DATABASE_URL = config("DATABASE_URL", default="")
 if DATABASE_URL:
     # استخدام قاعدة البيانات PostgreSQL على Render
     DATABASES = {
@@ -87,16 +87,37 @@ if DATABASE_URL:
             conn_max_age=600,
             ssl_require=True,
             conn_health_checks=True,
-            options={
-                'sslmode': 'require',
-            }
         )
     }
     
     # تأكد من أن الاتصال يعمل بشكل صحيح
-    DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
-    DATABASES['default']['TEST'] = {
-        'NAME': 'test_quran_app',
+    DATABASES['default'].update({
+        'ENGINE': 'django.db.backends.postgresql',
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
+        'TEST': {
+            'NAME': 'test_quran_app',
+        }
+    })
+    
+    # إعدادات إضافية للإنتاج
+    SECURE_SSL_REDIRECT = not DEBUG
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+    SECURE_HSTS_PRELOAD = not DEBUG
+    
+    # إعدادات الجلسة
+    SESSION_COOKIE_SECURE = not DEBUG
+    CSRF_COOKIE_SECURE = not DEBUG
+    
+    # إعدادات التخزين المؤقت
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+            'LOCATION': 'cache_table',
+        }
     }
 else:
     # استخدام SQLite للتطوير المحلي فقط
