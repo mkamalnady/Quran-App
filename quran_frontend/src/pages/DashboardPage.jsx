@@ -121,7 +121,12 @@ function DashboardPage() {
       closeModal();
       fetchData();
       // إظهار رسالة نجاح
-      alert('تم تسجيل المراجعة بنجاح! 🎉');
+      const reviewData = response.data.review_entry;
+      const message = `تم تسجيل المراجعة بنجاح! 🎉\n\n` +
+                     `📖 السورة: ${reviewData.surah_name}\n` +
+                     `📊 التقدم: ${reviewData.completion_percentage}%\n` +
+                     `🔢 الآيات: ${reviewData.verses_reviewed} من ${reviewData.total_verses}`;
+      alert(message);
     }).catch(() => {
       alert("حدث خطأ أثناء تسجيل المراجعة.");
     });
@@ -427,15 +432,6 @@ function DashboardPage() {
                           .sort((a, b) => new Date(b.date) - new Date(a.date))
                           .map((entry, idx) => (
                           <div key={idx} className="history-item">
-                            <div className="history-content">
-                              <div className="history-main">
-                                <span className="history-type">🔄 {entry.type || 'مراجعة'}</span>
-                                {entry.completion_percentage && (
-                                  <span className="completion-badge">
-                                    {entry.completion_percentage}% مكتملة
-                                  </span>
-                                )}
-                              </div>
                             <div className="history-date">
                               {new Date(entry.date).toLocaleDateString('ar-SA', {
                                 year: 'numeric',
@@ -445,13 +441,8 @@ function DashboardPage() {
                                 minute: '2-digit'
                               })}
                             </div>
-                            {entry.verses_reviewed && entry.total_verses && (
-                              <div className="verses-info">
-                                <small>
-                                  📖 {entry.verses_reviewed} من {entry.total_verses} آية
-                                </small>
-                              </div>
-                            )}
+                            <div className="history-type">
+                              🔄 {entry.type || 'مراجعة'}
                             </div>
                           </div>
                         ))}

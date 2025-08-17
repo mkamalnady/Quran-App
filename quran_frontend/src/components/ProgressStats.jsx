@@ -22,8 +22,22 @@ function ProgressStats({ memorizations, surahs }) {
     return reviewDate >= weekAgo;
   }).length;
 
+  // حساب إحصائيات إضافية
+  const averageProgress = memorizations.length > 0 
+    ? Math.round(memorizations.reduce((sum, memo) => {
+        const surah = surahs.find(s => s.number === memo.surah);
+        return sum + (surah ? (memo.end_ayah / surah.total_verses) * 100 : 0);
+      }, 0) / memorizations.length)
+    : 0;
   return (
     <div className="progress-stats">
+      <div className="stats-header">
+        <h3>📊 إحصائيات التقدم</h3>
+        <div className="overall-progress">
+          <span>التقدم العام: {averageProgress}%</span>
+        </div>
+      </div>
+      
       <div className="stats-grid">
         <div className="stat-card primary">
           <div className="stat-icon">📚</div>
