@@ -34,6 +34,7 @@ export default function SurahAudioButton({ surahNumber, surahName }) {
       <audio
         ref={audioRef}
         onEnded={() => setPlaying(false)}
+        onError={() => setPlaying(false)}
         preload="none"
       />
       <button
@@ -47,7 +48,8 @@ export default function SurahAudioButton({ surahNumber, surahName }) {
           height: "36px",
           cursor: "pointer",
           fontSize: "18px",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.15)"
+          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+          transition: "all 0.3s ease"
         }}
         title={`تشغيل سورة ${surahName}`}
       >

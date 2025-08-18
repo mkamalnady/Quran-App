@@ -711,3 +711,164 @@ input:focus, textarea:focus, select:focus {
   font-weight: bold;
   backdrop-filter: blur(10px);
 }
+
+.btn-modern.add {background: linear-gradient(135deg, #00b894, #00a085);}
+.btn-modern.review {background: linear-gradient(135deg, #1e88e5, #1565c0);}
+.btn-modern.history {background: linear-gradient(135deg, #ff9800, #f57c00);}
+.btn-modern.reset {background: linear-gradient(135deg, #e74c3c, #c0392b);}
+.btn-modern:disabled {background: #ccc; cursor: not-allowed;}
+
+.action-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.read-btn {
+  background: linear-gradient(135deg, #3949ab, #303f9f);
+  color: white;
+}
+
+.tafsir-btn {
+  background: linear-gradient(135deg, #6d4c41, #5d4037);
+  color: white;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+.bulk-actions-panel {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 2px solid #667eea;
+}
+
+.bulk-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.bulk-header h3 {
+  margin: 0;
+  color: #667eea;
+}
+
+.bulk-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.select-all-btn {
+  background: linear-gradient(135deg, #74b9ff, #0984e3);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.select-all-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(116, 185, 255, 0.4);
+}
+
+.selected-count {
+  background: #f8f9fa;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-weight: bold;
+  color: #495057;
+  border: 1px solid #dee2e6;
+}
+
+.bulk-actions-row {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.bulk-action-select {
+  flex: 1;
+  padding: 10px 15px;
+  border: 2px solid #e1e8ed;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+}
+
+.bulk-action-select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.apply-bulk-btn {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.apply-bulk-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+}
+
+.apply-bulk-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cancel-bulk-btn {
+  background: linear-gradient(135deg, #636e72, #2d3436);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.cancel-bulk-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 110, 114, 0.4);
+}
+
+.surah-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+.main-btn.bulk-actions {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  position: relative;
+}
+
+.main-btn.bulk-actions:hover {
+  background: linear-gradient(135deg, #764ba2, #667eea);
+}
