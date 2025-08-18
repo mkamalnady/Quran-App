@@ -22,6 +22,9 @@ function DashboardPage() {
   const [adhkarType, setAdhkarType] = useState("morning");
   const [dailyGoal, setDailyGoal] = useState(5); // هدف يومي: 5 آيات
   const [showSettings, setShowSettings] = useState(false);
+  const [selectedSurahs, setSelectedSurahs] = useState(new Set());
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [bulkAction, setBulkAction] = useState("");
 
   const fetchData = async () => {
     setLoading(true);
@@ -90,6 +93,88 @@ function DashboardPage() {
     }
   };
 
+  const handleResetSurah = async (surah) => {
+    if (!confirm(`هل أنت متأكد من إعادة تعيين حفظ سورة ${surah.name}؟\nسيتم حذف جميع البيانات المحفوظة لهذه السورة.`)) {
+      return;
+    }
+    
+    const token = localStorage.getItem('authToken');
+    const config = { headers: { Authorization: `Token ${token}` } };
+    
+    try {
+      await axios.delete(`https://quran-app-8ay9.onrender.com/api/memorization/${surah.progress.id}/`, config);
+      alert(`تم إعادة تعيين سورة ${surah.name} بنجاح! 🔄`);
+      fetchData();
+    } catch (error) {
+      alert("حدث خطأ أثناء إعادة التعيين.");
+    }
+  };
+
+  const handleBulkAction = async () => {
+    if (selectedSurahs.size === 0) {
+      alert("الرجاء اختيار سورة واحدة على الأقل");
+      return;
+    }
+    
+    if (!bulkAction) {
+      alert("الرجاء اختيار إجراء");
+      return;
+    }
+    
+    const selectedSurahsList = Array.from(selectedSurahs).map(num => 
+      surahs.find(s => s.number === num)
+    ).filter(Boolean);
+    
+    const surahNames = selectedSurahsList.map(s => s.name).join('، ');
+    
+    if (!confirm(`هل أنت متأكد من تطبيق "${bulkAction}" على السور التالية:\n${surahNames}`)) {
+      return;
+    }
+    
+    const token = localStorage.getItem('authToken');
+    const config = { headers: { Authorization: `Token ${token}` } };
+    
+    try {
+      for (const surah of selectedSurahsList) {
+        if (bulkAction === "حفظ كامل") {
+          const data = { surah: surah.number, start_ayah: 1, end_ayah: surah.total_verses };
+          const existingMemo = memorizations.find(m => m.surah === surah.number);
+          
+          if (existingMemo) {
+            await axios.patch(`https://quran-app-8ay9.onrender.com/api/memorization/${existingMemo.id}/`, data, config);
+          } else {
+            await axios.post('https://quran-app-8ay9.onrender.com/api/memorization/', data, config);
+          }
+        }
+      }
+      
+      alert(`تم تطبيق "${bulkAction}" على ${selectedSurahsList.length} سورة بنجاح! ✅`);
+      setSelectedSurahs(new Set());
+      setBulkAction("");
+      setShowBulkActions(false);
+      fetchData();
+    } catch (error) {
+      alert("حدث خطأ أثناء تطبيق الإجراء الجماعي.");
+    }
+  };
+
+  const toggleSurahSelection = (surahNumber) => {
+    const newSelected = new Set(selectedSurahs);
+    if (newSelected.has(surahNumber)) {
+      newSelected.delete(surahNumber);
+    } else {
+      newSelected.add(surahNumber);
+    }
+    setSelectedSurahs(newSelected);
+  };
+
+  const selectAllSurahs = () => {
+    if (selectedSurahs.size === surahs.length) {
+      setSelectedSurahs(new Set());
+    } else {
+      setSelectedSurahs(new Set(surahs.map(s => s.number)));
+    }
+  };
   const handleSaveMemorization = (isComplete = false) => {
     const end = isComplete ? selectedSurah.total_verses : parseInt(addFormData.end_ayah);
     const startVerse = selectedSurah.progress?.end_ayah || 0;
@@ -159,9 +244,64 @@ function DashboardPage() {
       <div className="top-bar">
         <button className="main-btn" onClick={() => setViewMode("memorization")}>📚 قائمة حفظ القرآن</button>
         <button className="main-btn" onClick={() => setViewMode("adhkarMenu")}>🕌 أذكار المسلم</button>
+        <button 
+          className="main-btn bulk-actions" 
+          onClick={() => setShowBulkActions(!showBulkActions)}
+        >
+          ⚡ إجراءات جماعية ({selectedSurahs.size})
+        </button>
         <button className="main-btn settings" onClick={() => setShowSettings(!showSettings)}>⚙️ الإعدادات</button>
       </div>
 
+      {/* إجراءات جماعية */}
+      {showBulkActions && viewMode === "memorization" && (
+        <div className="bulk-actions-panel">
+          <div className="bulk-header">
+            <h3>⚡ الإجراءات الجماعية</h3>
+            <div className="bulk-controls">
+              <button 
+                className="select-all-btn"
+                onClick={selectAllSurahs}
+              >
+                {selectedSurahs.size === surahs.length ? "إلغاء تحديد الكل" : "تحديد الكل"}
+              </button>
+              <span className="selected-count">
+                محدد: {selectedSurahs.size} من {surahs.length}
+              </span>
+            </div>
+          </div>
+          
+          <div className="bulk-actions-row">
+            <select 
+              value={bulkAction} 
+              onChange={(e) => setBulkAction(e.target.value)}
+              className="bulk-action-select"
+            >
+              <option value="">اختر إجراء...</option>
+              <option value="حفظ كامل">✨ حفظ كامل للسور المحددة</option>
+            </select>
+            
+            <button 
+              className="apply-bulk-btn"
+              onClick={handleBulkAction}
+              disabled={selectedSurahs.size === 0 || !bulkAction}
+            >
+              تطبيق الإجراء
+            </button>
+            
+            <button 
+              className="cancel-bulk-btn"
+              onClick={() => {
+                setShowBulkActions(false);
+                setSelectedSurahs(new Set());
+                setBulkAction("");
+              }}
+            >
+              إلغاء
+            </button>
+          </div>
+        </div>
+      )}
       {/* إعدادات سريعة */}
       {showSettings && (
         <div className="settings-panel">
@@ -215,6 +355,7 @@ function DashboardPage() {
         <table className="quran-table">
           <thead>
             <tr>
+              {showBulkActions && <th>تحديد</th>}
               <th>رقم</th>
               <th>اسم السورة</th>
               <th>النوع</th>
@@ -224,12 +365,23 @@ function DashboardPage() {
               <th>استماع</th>
               <th>تفسير</th>
               <th>إجراء</th>
+              <th>إعادة</th>
               <th>السجل</th>
             </tr>
           </thead>
           <tbody>
             {surahProgressData.map(surah => (
               <tr key={surah.number} className={surah.isDone ? 'completed-row' : ''}>
+                {showBulkActions && (
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={selectedSurahs.has(surah.number)}
+                      onChange={() => toggleSurahSelection(surah.number)}
+                      className="surah-checkbox"
+                    />
+                  </td>
+                )}
                 <td>{surah.number}</td>
                 <td>{surah.name}</td>
                 <td>{surah.type}</td>
@@ -237,13 +389,39 @@ function DashboardPage() {
                   <span className="verse-count">{surah.total_verses} آية</span>
                 </td>
                 <td style={{ color: surah.statusColor }}>{surah.statusText}</td>
-                <td><SurahReadLink surahNumber={surah.number} surahName={surah.name} /></td>
+                <td>
+                  <button
+                    className="action-btn read-btn"
+                    onClick={() => window.open(`https://quran.com/${surah.number}`, '_blank')}
+                    title={`قراءة سورة ${surah.name}`}
+                  >
+                    📖
+                  </button>
+                </td>
                 <td><SurahAudioButton surahNumber={surah.number} surahName={surah.name} /></td>
-                <td><SurahTafsirLink surahNumber={surah.number} surahName={surah.name} /></td>
+                <td>
+                  <button
+                    className="action-btn tafsir-btn"
+                    onClick={() => window.open(`https://quran.com/ar/${surah.number}:1/tafsirs/ar-tafsir-muyassar`, '_blank')}
+                    title={`تفسير سورة ${surah.name}`}
+                  >
+                    📚
+                  </button>
+                </td>
                 <td>
                   {surah.isDone
                     ? <button className="btn-modern review" onClick={() => openModal(surah, 'review')}>🔄 مراجعة</button>
                     : <button className="btn-modern add" onClick={() => openModal(surah, 'add')}>➕ أضف</button>}
+                </td>
+                <td>
+                  <button
+                    className="btn-modern reset"
+                    onClick={() => handleResetSurah(surah)}
+                    disabled={!surah.progress}
+                    title={`إعادة تعيين حفظ سورة ${surah.name}`}
+                  >
+                    🔄 إعادة
+                  </button>
                 </td>
                 <td>
                   <button
