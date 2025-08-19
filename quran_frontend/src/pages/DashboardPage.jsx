@@ -248,7 +248,7 @@ function DashboardPage() {
           className="main-btn bulk-actions" 
           onClick={() => setShowBulkActions(!showBulkActions)}
         >
-          ⚡ إجراءات جماعية ({selectedSurahs.size})
+          📚 حفظ أكتر من سورة ({selectedSurahs.size})
         </button>
         <button className="main-btn settings" onClick={() => setShowSettings(!showSettings)}>⚙️ الإعدادات</button>
       </div>
@@ -392,7 +392,7 @@ function DashboardPage() {
                 <td>
                   <button
                     className="action-btn read-btn"
-                    onClick={() => window.open(`https://quran.com/${surah.number}`, '_blank')}
+                    onClick={() => window.open(`https://quran.com/${surah.number}`, '_blank', 'noopener,noreferrer')}
                     title={`قراءة سورة ${surah.name}`}
                   >
                     📖
@@ -402,7 +402,7 @@ function DashboardPage() {
                 <td>
                   <button
                     className="action-btn tafsir-btn"
-                    onClick={() => window.open(`https://quran.com/ar/${surah.number}:1/tafsirs/ar-tafsir-muyassar`, '_blank')}
+                    onClick={() => window.open(`https://quran.com/ar/${surah.number}:1/tafsirs/ar-tafsir-muyassar`, '_blank', 'noopener,noreferrer')}
                     title={`تفسير سورة ${surah.name}`}
                   >
                     📚
