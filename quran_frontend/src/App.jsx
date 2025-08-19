@@ -10,6 +10,7 @@ import AdminDashboardPage from './pages/AdminDashboardPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import WelcomePage from './pages/WelcomePage';
 import ProtectedRoute from './components/ProtectedRoute';
+import PasswordResetPage from './pages/PasswordResetPage';
 import './App.css';
 
 // مكوّن فرعي للتحكم في إظهار الـ Navbar

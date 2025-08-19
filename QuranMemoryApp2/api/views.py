@@ -55,14 +55,17 @@ class MemorizationViewSet(viewsets.ModelViewSet):
         
         # إضافة المراجعة للتاريخ
         review_entry = {
-            'date': now.isoformat(),
+            'date': now.strftime('%Y-%m-%d %H:%M:%S'),
+            'timestamp': now.isoformat(),
             'type': 'مراجعة',
             'surah_name': memorization.surah.name,
             'surah_number': memorization.surah.number,
             'user': request.user.username,
             'verses_reviewed': memorization.end_ayah,
             'total_verses': memorization.surah.total_verses,
-            'completion_percentage': round((memorization.end_ayah / memorization.surah.total_verses) * 100, 1)
+            'completion_percentage': round((memorization.end_ayah / memorization.surah.total_verses) * 100, 1),
+            'gregorian_date': now.strftime('%d %B %Y'),
+            'arabic_date': now.strftime('%d %B %Y')
         }
         
         if memorization.review_history:

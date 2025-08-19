@@ -1,49 +1,30 @@
-// src/pages/LoginPage.jsx (النسخة المحدثة مع اللوجو)
-
+// src/pages/PasswordResetPage.jsx - صفحة إعادة تعيين كلمة المرور
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { API_BASE } from '../config';
 
-function LoginPage() {
+function PasswordResetPage() {
     const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [errors, setErrors] = useState({});
-    const [showPassword, setShowPassword] = useState(false);
-    const navigate = useNavigate();
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setErrors({});
+        setError('');
+        setMessage('');
         
         try {
-            // محاولة تسجيل الدخول بالإيميل أولاً
-            let loginData = { email, password };
-            let response;
-            
-            try {
-                response = await axios.post(`${API_BASE}/api/auth/login/`, loginData);
-            } catch (emailError) {
-                // إذا فشل بالإيميل، جرب باسم المستخدم
-                loginData = { username: email, password };
-                response = await axios.post(`${API_BASE}/api/auth/login/`, loginData);
-            }
-            
-            localStorage.setItem('authToken', response.data.key);
-            
-            const config = { headers: { Authorization: `Token ${response.data.key}` } };
-            const userDetailsResponse = await axios.get(`${API_BASE}/api/auth/user/`, config);
-            localStorage.setItem('isAdmin', userDetailsResponse.data.is_staff);
-            
-            navigate('/dashboard');
+            await axios.post(`${API_BASE}/api/auth/password/reset/`, { email });
+            setMessage('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني. تحقق من صندوق الوارد.');
         } catch (error) {
-            console.error('Login failed', error);
+            console.error('Password reset failed', error);
             if (error.response && error.response.data) {
-                setErrors(error.response.data);
+                setError(error.response.data.email ? error.response.data.email.join(' ') : 'حدث خطأ أثناء إرسال الطلب.');
             } else {
-                setErrors({ general: 'فشل تسجيل الدخول. الرجاء التأكد من البيانات.' });
+                setError('حدث خطأ أثناء إرسال الطلب. تأكد من صحة البريد الإلكتروني.');
             }
         } finally {
             setLoading(false);
@@ -51,86 +32,60 @@ function LoginPage() {
     };
 
     return (
-        <div className="login-page">
-            <div className="login-container">
-                <div className="login-card">
-                    <div className="login-header">
-                        <img src="/quran-logo.png" alt="القرآن الكريم" className="login-logo" />
-                        <h1>تسجيل الدخول</h1>
-                        <p>ادخل إلى حسابك لمتابعة رحلة حفظ القرآن الكريم</p>
+        <div className="password-reset-page">
+            <div className="reset-container">
+                <div className="reset-card">
+                    <div className="reset-header">
+                        <img src="/quran-logo.png" alt="القرآن الكريم" className="reset-logo" />
+                        <h1>إعادة تعيين كلمة المرور</h1>
+                        <p>أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة تعيين كلمة المرور</p>
                     </div>
 
-                    {errors.general && (
-                        <div className="error-message">
-                            {errors.general}
+                    {message && (
+                        <div className="success-message">
+                            {message}
                         </div>
                     )}
 
-                    {errors.non_field_errors && (
+                    {error && (
                         <div className="error-message">
-                            {errors.non_field_errors.join(' ')}
+                            {error}
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="login-form">
+                    <form onSubmit={handleSubmit} className="reset-form">
                         <div className="form-group">
-                            <label htmlFor="email">البريد الإلكتروني أو اسم المستخدم</label>
+                            <label htmlFor="email">البريد الإلكتروني</label>
                             <div className="input-wrapper">
                                 <input
-                                    type="text"
+                                    type="email"
                                     id="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="أدخل بريدك الإلكتروني أو اسم المستخدم"
+                                    placeholder="أدخل بريدك الإلكتروني"
                                     required
                                     disabled={loading}
                                 />
-                                <span className="input-icon">👤</span>
+                                <span className="input-icon">📧</span>
                             </div>
-                            {errors.email && <div className="field-error">{errors.email.join(' ')}</div>}
-                            {errors.username && <div className="field-error">{errors.username.join(' ')}</div>}
                         </div>
 
-                        <div className="form-group">
-                            <label htmlFor="password">كلمة المرور</label>
-                            <div className="input-wrapper">
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    id="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="أدخل كلمة المرور"
-                                    required
-                                    disabled={loading}
-                                />
-                                <button
-                                    type="button"
-                                    className="password-toggle"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    disabled={loading}
-                                >
-                                    {showPassword ? '🙈' : '👁️'}
-                                </button>
-                            </div>
-                            {errors.password && <div className="field-error">{errors.password.join(' ')}</div>}
-                        </div>
-
-                        <button type="submit" className="login-btn" disabled={loading}>
+                        <button type="submit" className="reset-btn" disabled={loading}>
                             {loading ? (
                                 <>
                                     <span className="spinner"></span>
-                                    جاري تسجيل الدخول...
+                                    جاري الإرسال...
                                 </>
                             ) : (
-                                'تسجيل الدخول'
+                                '🔑 إرسال رابط إعادة التعيين'
                             )}
                         </button>
                     </form>
 
-                    <div className="login-footer">
+                    <div className="reset-footer">
                         <p>
-                            ليس لديك حساب؟ 
-                            <Link to="/register" className="register-link">إنشاء حساب جديد</Link>
+                            تذكرت كلمة المرور؟ 
+                            <Link to="/login" className="login-link">تسجيل الدخول</Link>
                         </p>
                         <Link to="/" className="back-home">← العودة للرئيسية</Link>
                     </div>
@@ -138,7 +93,7 @@ function LoginPage() {
             </div>
 
             <style jsx>{`
-                .login-page {
+                .password-reset-page {
                     min-height: 100vh;
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                     display: flex;
@@ -147,12 +102,12 @@ function LoginPage() {
                     padding: 20px;
                 }
 
-                .login-container {
+                .reset-container {
                     width: 100%;
                     max-width: 450px;
                 }
 
-                .login-card {
+                .reset-card {
                     background: white;
                     border-radius: 20px;
                     padding: 40px;
@@ -161,12 +116,12 @@ function LoginPage() {
                     border: 1px solid rgba(255,255,255,0.2);
                 }
 
-                .login-header {
+                .reset-header {
                     text-align: center;
                     margin-bottom: 30px;
                 }
 
-                .login-logo {
+                .reset-logo {
                     width: 80px;
                     height: 80px;
                     object-fit: contain;
@@ -174,18 +129,29 @@ function LoginPage() {
                     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
                 }
 
-                .login-header h1 {
+                .reset-header h1 {
                     margin: 0 0 10px 0;
                     color: #2c3e50;
                     font-size: 2rem;
                     font-weight: bold;
                 }
 
-                .login-header p {
+                .reset-header p {
                     margin: 0;
                     color: #666;
                     font-size: 0.95rem;
                     line-height: 1.5;
+                }
+
+                .success-message {
+                    background: #d4edda;
+                    color: #155724;
+                    padding: 12px;
+                    border-radius: 8px;
+                    margin-bottom: 20px;
+                    border: 1px solid #c3e6cb;
+                    font-size: 0.9rem;
+                    text-align: center;
                 }
 
                 .error-message {
@@ -199,7 +165,7 @@ function LoginPage() {
                     text-align: center;
                 }
 
-                .login-form {
+                .reset-form {
                     margin-bottom: 30px;
                 }
 
@@ -251,40 +217,10 @@ function LoginPage() {
                     font-size: 1.2rem;
                 }
 
-                .password-toggle {
-                    position: absolute;
-                    right: 15px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    background: none;
-                    border: none;
-                    cursor: pointer;
-                    font-size: 1.2rem;
-                    color: #666;
-                    padding: 5px;
-                    border-radius: 4px;
-                    transition: background 0.2s ease;
-                }
-
-                .password-toggle:hover {
-                    background: rgba(0,0,0,0.05);
-                }
-
-                .password-toggle:disabled {
-                    opacity: 0.5;
-                    cursor: not-allowed;
-                }
-
-                .field-error {
-                    color: #c33;
-                    font-size: 0.85rem;
-                    margin-top: 5px;
-                }
-
-                .login-btn {
+                .reset-btn {
                     width: 100%;
                     padding: 15px;
-                    background: linear-gradient(135deg, #667eea, #764ba2);
+                    background: linear-gradient(135deg, #f39c12, #e67e22);
                     color: white;
                     border: none;
                     border-radius: 12px;
@@ -298,12 +234,12 @@ function LoginPage() {
                     gap: 10px;
                 }
 
-                .login-btn:hover:not(:disabled) {
+                .reset-btn:hover:not(:disabled) {
                     transform: translateY(-2px);
-                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+                    box-shadow: 0 8px 20px rgba(243, 156, 18, 0.3);
                 }
 
-                .login-btn:disabled {
+                .reset-btn:disabled {
                     opacity: 0.7;
                     cursor: not-allowed;
                     transform: none;
@@ -323,24 +259,24 @@ function LoginPage() {
                     100% { transform: rotate(360deg); }
                 }
 
-                .login-footer {
+                .reset-footer {
                     text-align: center;
                 }
 
-                .login-footer p {
+                .reset-footer p {
                     margin: 0 0 15px 0;
                     color: #666;
                     font-size: 0.95rem;
                 }
 
-                .register-link {
+                .login-link {
                     color: #667eea;
                     text-decoration: none;
                     font-weight: 600;
                     margin-right: 5px;
                 }
 
-                .register-link:hover {
+                .login-link:hover {
                     text-decoration: underline;
                 }
 
@@ -355,30 +291,13 @@ function LoginPage() {
                     color: #667eea;
                 }
 
-                .forgot-password {
-                    margin: 10px 0;
-                }
-
-                .forgot-link {
-                    color: #f39c12;
-                    text-decoration: none;
-                    font-size: 0.9rem;
-                    font-weight: 600;
-                    transition: color 0.2s ease;
-                }
-
-                .forgot-link:hover {
-                    color: #e67e22;
-                    text-decoration: underline;
-                }
-
                 @media (max-width: 480px) {
-                    .login-card {
+                    .reset-card {
                         padding: 30px 20px;
                         margin: 10px;
                     }
 
-                    .login-header h1 {
+                    .reset-header h1 {
                         font-size: 1.7rem;
                     }
 
@@ -391,4 +310,4 @@ function LoginPage() {
     );
 }
 
-export default LoginPage;
+export default PasswordResetPage;

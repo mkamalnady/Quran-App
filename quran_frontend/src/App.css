@@ -872,3 +872,30 @@ input:focus, textarea:focus, select:focus {
 .main-btn.bulk-actions:hover {
   background: linear-gradient(135deg, #764ba2, #667eea);
 }
+
+.history-item {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-date {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.history-type {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.history-progress {
+  color: #667eea;
+  font-weight: bold;
+  font-size: 0.9rem;
+}

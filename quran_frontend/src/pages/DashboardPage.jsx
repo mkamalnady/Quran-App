@@ -257,7 +257,7 @@ function DashboardPage() {
       {showBulkActions && viewMode === "memorization" && (
         <div className="bulk-actions-panel">
           <div className="bulk-header">
-            <h3>⚡ الإجراءات الجماعية</h3>
+            <h3>📚 حفظ أكتر من سورة</h3>
             <div className="bulk-controls">
               <button 
                 className="select-all-btn"
