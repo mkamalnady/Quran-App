@@ -1,5 +1,6 @@
 // src/components/ProgressStats.jsx - مكون إحصائيات التقدم
 import React from 'react';
+import { getRelativeTime } from '../utils/dateUtils';
 
 function ProgressStats({ memorizations, surahs }) {
   const totalSurahs = surahs.length;
@@ -21,6 +22,11 @@ function ProgressStats({ memorizations, surahs }) {
     weekAgo.setDate(weekAgo.getDate() - 7);
     return reviewDate >= weekAgo;
   }).length;
+
+  // حساب آخر مراجعة
+  const lastReviewDate = memorizations
+    .filter(memo => memo.last_review_date)
+    .sort((a, b) => new Date(b.last_review_date) - new Date(a.last_review_date))[0]?.last_review_date;
 
   // حساب إحصائيات إضافية
   const averageProgress = memorizations.length > 0 
@@ -96,9 +102,9 @@ function ProgressStats({ memorizations, surahs }) {
         <div className="stat-card info">
           <div className="stat-icon">⭐</div>
           <div className="stat-content">
-            <h3>{memorizations.length * 10}</h3>
-            <p>نقطة إنجاز</p>
-            <small>10 نقاط لكل سورة</small>
+            <h3>{lastReviewDate ? getRelativeTime(lastReviewDate) : 'لا يوجد'}</h3>
+            <p>آخر مراجعة</p>
+            <small>{lastReviewDate ? 'استمر في المراجعة' : 'ابدأ المراجعة'}</small>
           </div>
         </div>
       </div>

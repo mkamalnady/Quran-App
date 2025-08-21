@@ -1,5 +1,6 @@
 // src/components/AchievementSystem.jsx - نظام الإنجازات والنقاط
 import React, { useState, useEffect } from 'react';
+import { getRelativeTime } from '../utils/dateUtils';
 
 function AchievementSystem({ memorizations, surahs }) {
   const [achievements, setAchievements] = useState([]);
@@ -79,7 +80,7 @@ function AchievementSystem({ memorizations, surahs }) {
       {
         id: 'consistent_reviewer',
         title: 'المراجع المثابر',
-        description: 'راجع 5 سور هذا الأسبوع',
+        description: `راجع 5 سور هذا الأسبوع (${recentReviews}/5)`,
         icon: '🔄',
         points: 80,
         unlocked: recentReviews >= 5,

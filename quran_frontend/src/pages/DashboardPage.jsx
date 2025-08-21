@@ -8,6 +8,8 @@ import SurahReadLink from '../components/SurahReadLink';
 import SurahAudioButton from '../components/SurahAudioButton';
 import SurahTafsirLink from '../components/SurahTafsirLink';
 import AdhkarView from '../components/AdhkarView';
+import DateDisplay from '../components/DateDisplay';
+import { formatDateTime, getRelativeTime } from '../utils/dateUtils';
 
 function DashboardPage() {
   const [memorizations, setMemorizations] = useState([]);
@@ -222,6 +224,9 @@ function DashboardPage() {
 
   return (
     <div className="container">
+
+      {/* عرض التاريخين الهجري والميلادي */}
+      <DateDisplay />
 
       {viewMode === "memorization" && (
         <>
@@ -560,7 +565,13 @@ function DashboardPage() {
                   {selectedSurah.progress?.last_review_date && (
                     <div className="review-detail-item">
                       <span className="detail-label">🕐 آخر مراجعة:</span>
-                      <span className="detail-value">{new Date(selectedSurah.progress.last_review_date).toLocaleDateString('ar-SA')}</span>
+                      <span className="detail-value">
+                        {formatDateTime(selectedSurah.progress.last_review_date).full}
+                        <br />
+                        <small style={{ color: '#6c757d', fontSize: '0.8rem' }}>
+                          ({getRelativeTime(selectedSurah.progress.last_review_date)})
+                        </small>
+                      </span>
                     </div>
                   )}
                 </div>
@@ -610,14 +621,16 @@ function DashboardPage() {
                           .sort((a, b) => new Date(b.date) - new Date(a.date))
                           .map((entry, idx) => (
                           <div key={idx} className="history-item">
-                            <div className="history-date">
-                              {new Date(entry.date).toLocaleDateString('ar-SA', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
+                            <div className="history-info">
+                              <div className="history-date">
+                                📅 {formatDateTime(entry.date).gregorian}
+                              </div>
+                              <div className="history-time">
+                                🕐 {formatDateTime(entry.date).time}
+                              </div>
+                              <div className="history-relative">
+                                {getRelativeTime(entry.date)}
+                              </div>
                             </div>
                             <div className="history-type">
                               🔄 {entry.type || 'مراجعة'}
@@ -908,16 +921,46 @@ function DashboardPage() {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          transition: all 0.2s ease;
+        }
+        
+        .history-item:hover {
+          background: #f8f9fa;
+          transform: translateX(-2px);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .history-info {
+          flex: 1;
+          text-align: right;
         }
         
         .history-date {
-          color: #6c757d;
+          color: #2c3e50;
+          font-weight: bold;
           font-size: 0.9rem;
+          margin-bottom: 4px;
+        }
+        
+        .history-time {
+          color: #495057;
+          font-size: 0.85rem;
+          margin-bottom: 2px;
+        }
+        
+        .history-relative {
+          color: #6c757d;
+          font-size: 0.8rem;
+          font-style: italic;
         }
         
         .history-type {
           color: #28a745;
           font-weight: bold;
+          background: #e8f5e8;
+          padding: 6px 12px;
+          border-radius: 15px;
+          font-size: 0.85rem;
         }
         
         .no-reviews, .no-progress {

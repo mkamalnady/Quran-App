@@ -1,9 +1,11 @@
 // src/pages/WelcomePage.jsx - صفحة الترحيب الاحترافية
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { getCurrentDate } from '../utils/dateUtils';
 
 function WelcomePage() {
   const [currentQuote, setCurrentQuote] = useState(0);
+  const [currentDateTime, setCurrentDateTime] = useState(getCurrentDate());
   const navigate = useNavigate();
 
   const quranQuotes = [
@@ -26,7 +28,15 @@ function WelcomePage() {
       setCurrentQuote(prev => (prev + 1) % quranQuotes.length);
     }, 4000);
 
-    return () => clearInterval(interval);
+    // تحديث التاريخ والوقت
+    const dateInterval = setInterval(() => {
+      setCurrentDateTime(getCurrentDate());
+    }, 1000);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(dateInterval);
+    };
   }, [navigate]);
 
   return (
@@ -109,6 +119,20 @@ function WelcomePage() {
       {/* Footer */}
       <footer className="welcome-footer">
         <div className="container">
+          <div className="footer-dates">
+            <div className="footer-date-item">
+              <span className="date-icon">📅</span>
+              <span>{currentDateTime.gregorian}</span>
+            </div>
+            <div className="footer-date-item">
+              <span className="date-icon">🌙</span>
+              <span>{currentDateTime.hijri}</span>
+            </div>
+            <div className="footer-date-item">
+              <span className="date-icon">🕐</span>
+              <span>{currentDateTime.time}</span>
+            </div>
+          </div>
           <p>&copy; 2024 برنامج حفظ القرآن الكريم - جميع الحقوق محفوظة</p>
         </div>
       </footer>
@@ -322,6 +346,30 @@ function WelcomePage() {
           border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        .footer-dates {
+          display: flex;
+          justify-content: center;
+          gap: 30px;
+          margin-bottom: 20px;
+          flex-wrap: wrap;
+        }
+
+        .footer-date-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.1);
+          padding: 8px 15px;
+          border-radius: 20px;
+          backdrop-filter: blur(10px);
+          font-size: 0.9rem;
+          font-weight: 500;
+        }
+
+        .date-icon {
+          font-size: 1.1rem;
+        }
+
         .welcome-footer p {
           margin: 0;
           opacity: 0.8;
@@ -357,6 +405,11 @@ function WelcomePage() {
           .btn-primary.large, .btn-secondary.large {
             width: 100%;
             max-width: 300px;
+          }
+          
+          .footer-dates {
+            flex-direction: column;
+            gap: 15px;
           }
         }
       `}</style>

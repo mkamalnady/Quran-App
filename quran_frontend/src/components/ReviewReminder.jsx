@@ -1,5 +1,6 @@
 // src/components/ReviewReminder.jsx - مكون تذكيرات المراجعة
 import React, { useState, useEffect } from 'react';
+import { getRelativeTime } from '../utils/dateUtils';
 
 function ReviewReminder({ memorizations, surahs, onReviewSurah }) {
   const [reminders, setReminders] = useState([]);
@@ -19,7 +20,7 @@ function ReviewReminder({ memorizations, surahs, onReviewSurah }) {
           const lastReview = new Date(memo.last_review_date);
           daysSinceReview = Math.floor((now - lastReview) / (1000 * 60 * 60 * 24));
         } else {
-          daysSinceReview = 30; // إذا لم تتم مراجعة من قبل
+          daysSinceReview = 999; // إذا لم تتم مراجعة من قبل
         }
 
         let priority = 'low';
@@ -27,13 +28,15 @@ function ReviewReminder({ memorizations, surahs, onReviewSurah }) {
 
         if (daysSinceReview >= 7) {
           priority = 'high';
-          message = `⚠️ لم تتم مراجعتها منذ ${daysSinceReview} يوم - مراجعة عاجلة!`;
+          message = memo.last_review_date 
+            ? `⚠️ ${getRelativeTime(memo.last_review_date)} - مراجعة عاجلة!`
+            : `⚠️ لم تتم مراجعتها من قبل - ابدأ الآن!`;
         } else if (daysSinceReview >= 3) {
           priority = 'medium';
-          message = `⏰ لم تتم مراجعتها منذ ${daysSinceReview} أيام`;
+          message = `⏰ ${getRelativeTime(memo.last_review_date)}`;
         } else if (daysSinceReview >= 1) {
           priority = 'low';
-          message = `📅 آخر مراجعة منذ ${daysSinceReview} يوم`;
+          message = `📅 ${getRelativeTime(memo.last_review_date)}`;
         }
 
         if (daysSinceReview >= 1) {
