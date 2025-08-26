@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from .views import home  # استوردنا صفحة الترحيب
+from .views import home  # استورد صفحة ترحيب (تأكد وجودها أو استبدلها)
 
 urlpatterns = [
     path('', home),  # صفحة البداية (الرئيسية)
@@ -8,4 +8,5 @@ urlpatterns = [
     path('api/', include('api.urls')),
     path('api/auth/', include('dj_rest_auth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
+    path('accounts/', include('allauth.urls')),  # روابط django-allauth
 ]
