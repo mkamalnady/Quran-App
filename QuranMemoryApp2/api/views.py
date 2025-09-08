@@ -1,48 +1,42 @@
-# api/views.py (النسخة الكاملة والنهائية)
-
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
+from django.db.models import Count, Avg
 from .models import Surah, Memorization
 from .serializers import SurahSerializer, MemorizationSerializer, UserSerializer
 
+
 # --- بوابة API لعرض السور ---
 class SurahViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    API endpoint that allows surahs to be viewed.
-    """
     queryset = Surah.objects.all().order_by('number')
     serializer_class = SurahSerializer
     permission_classes = [IsAuthenticated]
 
+
 # --- بوابة API لإدارة سجلات الحفظ ---
 class MemorizationViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows memorization records to be viewed or edited.
-    """
     serializer_class = MemorizationSerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        # كل مستخدم يرى سجلاته فقط
         return Memorization.objects.filter(user=self.request.user)
     
     def perform_create(self, serializer):
-        # عند إنشاء سجل جديد، نحفظه باسم المستخدم الحالي
         serializer.save(user=self.request.user)
     
     def perform_update(self, serializer):
-        # التأكد من أن المستخدم يحدث سجلاته فقط
         if serializer.instance.user != self.request.user:
-            raise PermissionError("ليس لديك صلاحية لتعديل هذا السجل")
+            return Response(
+                {"error": "ليس لديك صلاحية لتعديل هذا السجل"},
+                status=status.HTTP_403_FORBIDDEN
+            )
         serializer.save()
     
     @action(detail=True, methods=['post'])
     def add_review(self, request, pk=None):
-        """إضافة مراجعة لسجل الحفظ"""
         memorization = self.get_object()
         if memorization.user != request.user:
             return Response(
@@ -53,7 +47,6 @@ class MemorizationViewSet(viewsets.ModelViewSet):
         from datetime import datetime
         now = datetime.now()
         
-        # إضافة المراجعة للتاريخ
         review_entry = {
             'date': now.strftime('%Y-%m-%d %H:%M:%S'),
             'timestamp': now.isoformat(),
@@ -83,11 +76,34 @@ class MemorizationViewSet(viewsets.ModelViewSet):
             'review_entry': review_entry
         })
 
-# --- بوابة API الجديدة والآمنة للمشرفين فقط ---
+
+# --- بوابة API للمشرفين فقط ---
 class AdminUserViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    API endpoint for admins to view user list.
-    """
     queryset = User.objects.all().order_by('id')
     serializer_class = UserSerializer
-    permission_classes = [IsAdminUser] # يسمح للمشرفين فقط
+    permission_classes = [IsAdminUser]
+
+    # ✅ إضافة Dashboard Endpoint للمشرف
+    @action(detail=False, methods=['get'])
+    def dashboard(self, request):
+        total_users = User.objects.count()
+        total_memorizations = Memorization.objects.count()
+
+        # متوسط نسبة الحفظ
+        avg_completion = Memorization.objects.aggregate(
+            avg_progress=Avg('end_ayah')
+        )['avg_progress']
+
+        # أكتر 5 مستخدمين نشطين
+        top_users = (
+            Memorization.objects.values('user__username')
+            .annotate(records=Count('id'))
+            .order_by('-records')[:5]
+        )
+
+        return Response({
+            "total_users": total_users,
+            "total_memorizations": total_memorizations,
+            "average_completion": round(avg_completion, 1) if avg_completion else 0,
+            "top_users": list(top_users)
+        })
