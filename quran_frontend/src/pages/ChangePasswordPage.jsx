@@ -78,7 +78,7 @@ function ChangePasswordPage() {
       const token = localStorage.getItem('authToken');
       const config = { headers: { Authorization: `Token ${token}` } };
       await axios.post(
-        'https://quran-app-8ay9.onrender.com/api/auth/password/change/',
+        'http://127.0.0.1:8000/api/auth/password/change/',
         { old_password, new_password1, new_password2 },
         config
       );
