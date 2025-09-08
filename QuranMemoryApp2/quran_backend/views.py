@@ -273,7 +273,7 @@ def home(request):
                 </header>
 
                 <div class="actions">
-                    <a class="btn" href="https://gleeful-haupia-3d4fa4.netlify.app/login">الدخول للمستخدم</a>
+                    <a class="btn" href="https://gleeful-haupia-3d4fa4.netlify.app">الدخول للمستخدم</a>
                     <a class="btn" href="/admin/">الدخول لصفحة الإدارة</a>
                 </div>
 
