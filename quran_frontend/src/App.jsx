@@ -3,24 +3,22 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.jsx';
 import Navbar from './components/Navbar';
-import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
+import EditProfilePage from './pages/EditProfilePage';
 import WelcomePage from './pages/WelcomePage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordConfirmPage from './pages/ResetPasswordConfirmPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import PasswordResetPage from './pages/PasswordResetPage';
 import './App.css';
 
-// مكوّن فرعي للتحكم في إظهار الـ Navbar
 function AppContent() {
   const location = useLocation();
   const isAuthenticated = !!localStorage.getItem('authToken');
-
-  // إظهار الـ Navbar فقط للمستخدمين المسجلين
-  const showNavbar = isAuthenticated && 
-    location.pathname !== '/login' && 
+  const showNavbar = isAuthenticated &&
     location.pathname !== '/register' &&
     location.pathname !== '/';
 
@@ -30,7 +28,8 @@ function AppContent() {
       <main>
         <Routes>
           <Route path="/" element={<WelcomePage />} />
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password-confirm" element={<ResetPasswordConfirmPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
@@ -47,6 +46,17 @@ function AppContent() {
               <ChangePasswordPage />
             </ProtectedRoute>
           } />
+          <Route path="/change-password" element={
+            <ProtectedRoute>
+              <ChangePasswordPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/edit-profile" element={
+            <ProtectedRoute>
+              <EditProfilePage />
+            </ProtectedRoute>
+          } />
+          <Route path="/password/reset" element={<PasswordResetPage />} />
         </Routes>
       </main>
     </>
