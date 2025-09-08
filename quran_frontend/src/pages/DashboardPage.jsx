@@ -40,8 +40,8 @@ function DashboardPage() {
 
       const config = { headers: { Authorization: `Token ${token}` } };
       const [surahsResponse, memoResponse] = await Promise.all([
-        axios.get('http://127.0.0.1:8000/api/surahs/', config),
-        axios.get('http://127.0.0.1:8000/api/memorization/', config),
+        axios.get('https://quran-app-8ay9.onrender.com/api/surahs/', config),
+        axios.get('https://quran-app-8ay9.onrender.com/api/memorization/', config),
       ]);
 
       setSurahs(surahsResponse.data);
@@ -123,7 +123,7 @@ function DashboardPage() {
 
     try {
       await axios.delete(
-        `http://127.0.0.1:8000/api/memorization/${surah.progress.id}/`,
+        `https://quran-app-8ay9.onrender.com/api/memorization/${surah.progress.id}/`,
         config
       );
       alert(`تم إعادة تعيين سورة ${surah.name} بنجاح! 🔄`);
@@ -170,19 +170,19 @@ function DashboardPage() {
 
           if (existingMemo) {
             await axios.patch(
-              `http://127.0.0.1:8000/api/memorization/${existingMemo.id}/`,
+              `https://quran-app-8ay9.onrender.com/api/memorization/${existingMemo.id}/`,
               data,
               config
             );
           } else {
-            await axios.post('http://127.0.0.1:8000/api/memorization/', data, config);
+            await axios.post('https://quran-app-8ay9.onrender.com/api/memorization/', data, config);
           }
         }
         else if (bulkAction === 'تسجيل مراجعة') {
           const existingMemo = memorizations.find((m) => m.surah === surah.number);
           if (existingMemo) {
             await axios.post(
-              `http://127.0.0.1:8000/api/memorization/${existingMemo.id}/add_review/`,
+              `https://quran-app-8ay9.onrender.com/api/memorization/${existingMemo.id}/add_review/`,
               {},
               config
             );
@@ -192,7 +192,7 @@ function DashboardPage() {
           const existingMemo = memorizations.find((m) => m.surah === surah.number);
           if (existingMemo) {
             await axios.delete(
-              `http://127.0.0.1:8000/api/memorization/${existingMemo.id}/`,
+              `https://quran-app-8ay9.onrender.com/api/memorization/${existingMemo.id}/`,
               config
             );
           }
@@ -241,8 +241,8 @@ function DashboardPage() {
 
     const data = { surah: selectedSurah.number, start_ayah: 1, end_ayah: end };
     const url = selectedSurah.progress
-      ? `http://127.0.0.1:8000/api/memorization/${selectedSurah.progress.id}/`
-      : 'http://127.0.0.1:8000/api/memorization/';
+      ? `https://quran-app-8ay9.onrender.com/api/memorization/${selectedSurah.progress.id}/`
+      : 'https://quran-app-8ay9.onrender.com/api/memorization/';
     const method = selectedSurah.progress ? 'patch' : 'post';
     handleApiCall(method, url, data);
   };
