@@ -1,15 +1,12 @@
-# quran_backend/settings.py
-
 import os
 from pathlib import Path
 import dj_database_url
-from decouple import config  # تأكد من استيراد config
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Secret key و debug
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-goes-here')
-DEBUG = config('DEBUG', default='False').lower() in ('1', 'true', 'yes')
+DEBUG = config('DEBUG', default='True').lower() in ('1', 'true', 'yes')
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -18,9 +15,8 @@ ALLOWED_HOSTS = [
     "quran-app-8ay9.onrender.com",
 ]
 
-# Applications
 INSTALLED_APPS = [
-    'api.apps.ApiConfig',
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -28,6 +24,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+
+    # Apps
+    'api.apps.ApiConfig',
+
+    # مكتبات
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
@@ -40,19 +41,18 @@ INSTALLED_APPS = [
 
 SITE_ID = 1
 
-# Middleware
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',   # مهم عشان تبديل اللغة
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-  
 ]
 
 ROOT_URLCONF = 'quran_backend.urls'
@@ -60,7 +60,7 @@ ROOT_URLCONF = 'quran_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "quran_backend"],
+        'DIRS': [BASE_DIR / "quran_backend" / "templates"],  # هنضيف فولدر templates
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -76,25 +76,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'quran_backend.wsgi.application'
 ASGI_APPLICATION = 'quran_backend.asgi.application'
 
-# Database
-DATABASE_URL = config("DATABASE_URL", default="")  # من env أو فارغ
+# قاعدة البيانات
+DATABASE_URL = config("DATABASE_URL", default="")
 if DATABASE_URL:
-    # PostgreSQL على Render
     DATABASES = {
-        "default": dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=True
-        )
+        "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
     }
-    SECURE_SSL_REDIRECT = not DEBUG
-    SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
-    SECURE_HSTS_PRELOAD = not DEBUG
-    SESSION_COOKIE_SECURE = not DEBUG
-    CSRF_COOKIE_SECURE = not DEBUG
 else:
-    # SQLite للتطوير المحلي
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -102,7 +90,7 @@ else:
         }
     }
 
-# Password validation
+# كلمات مرور
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -110,21 +98,32 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# Internationalization
-LANGUAGE_CODE = 'ar'
-TIME_ZONE = 'UTC'
+# اللغات
+LANGUAGE_CODE = 'ar'   # افتراضي عربي
+TIME_ZONE = 'Africa/Cairo'
+
 USE_I18N = True
 USE_TZ = True
 
-# Static files
+LANGUAGES = [
+    ('ar', 'العربية'),
+    ('en', 'English'),
+]
+
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',
+]
+
+# static & media
 STATIC_URL = "/static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# DRF
+# rest framework
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
@@ -135,13 +134,54 @@ REST_FRAMEWORK = {
     ],
 }
 
-# CORS/CSRF
+REST_AUTH_SERIALIZERS = {
+    'LOGIN_SERIALIZER': 'api.serializers.CustomLoginSerializer',
+    'REGISTER_SERIALIZER': 'api.serializers.CustomRegisterSerializer',
+}
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email', 'username', 'password1', 'password2']
+ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_ADAPTER = 'api.adapters.CustomAccountAdapter'
+
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:8000",
     "https://gleeful-haupia-3d4fa4.netlify.app",
 ]
+
 CSRF_TRUSTED_ORIGINS = [
     "https://quran-app-8ay9.onrender.com",
     "https://gleeful-haupia-3d4fa4.netlify.app",
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ================= Jazzmin ==================
+JAZZMIN_SETTINGS = {
+    "site_title": "Quran Memorization",
+    "site_header": "Quran Memorization App",
+    "site_brand": "Quran Admin",
+    "welcome_sign": "Quran Admin Page",
+    "copyright": "© 2025 Quran Memory",
+
+    "site_logo": "images/quran-logo.png",
+    "login_logo": "images/quran-logo.png",
+
+    "show_sidebar": True,
+    "navigation_expanded": True,
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "theme": "flatly",
+    "dark_mode_theme": "darkly",
+    "sidebar_fixed": True,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+}
