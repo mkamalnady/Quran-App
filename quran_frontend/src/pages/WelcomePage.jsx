@@ -1,34 +1,45 @@
-// src/pages/WelcomePage.jsx - صفحة الترحيب الاحترافية
+// src/pages/WelcomePage.jsx
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 import { getCurrentDate } from '../utils/dateUtils';
+import { API_BASE } from '../config';
 
 function WelcomePage() {
   const [currentQuote, setCurrentQuote] = useState(0);
-  const [currentDateTime, setCurrentDateTime] = useState(getCurrentDate());
+  const [currentDateTime, setCurrentDateTime] = useState(getCurrentDate);
+  const [fadeClass, setFadeClass] = useState('fade-in');
+
+  // Login form states
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+
   const navigate = useNavigate();
 
   const quranQuotes = [
-    "﴿ وَقُل رَّبِّ زِدْنِي عِلْمًا ﴾",
-    "﴿ إِنَّ مَعَ الْعُسْرِ يُسْرًا ﴾",
-    "﴿ فَاذْكُرُونِي أَذْكُرْكُمْ ﴾",
-    "﴿ أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ ﴾"
+    { arabic: "﴿ وَقُل رَّبِّ زِدْنِي عِلْمًا ﴾", translation: "وقل ربي زدني علماً", reference: "طه: 114" },
+    { arabic: "﴿ إِنَّ مَعَ الْعُسْرِ يُسْرًا ﴾", translation: "إن مع العسر يسراً", reference: "الشرح: 6" },
+    { arabic: "﴿ فَاذْكُرُونِي أَذْكُرْكُمْ ﴾", translation: "فاذكروني أذكركم", reference: "البقرة: 152" },
+    { arabic: "﴿ أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ ﴾", translation: "ألا بذكر الله تطمئن القلوب", reference: "الرعد: 28" }
   ];
 
   useEffect(() => {
-    // التحقق من تسجيل الدخول
     const token = localStorage.getItem('authToken');
     if (token) {
       navigate('/dashboard');
       return;
     }
 
-    // تدوير الآيات
     const interval = setInterval(() => {
-      setCurrentQuote(prev => (prev + 1) % quranQuotes.length);
-    }, 4000);
+      setFadeClass('fade-out');
+      setTimeout(() => {
+        setCurrentQuote(prev => (prev + 1) % quranQuotes.length);
+        setFadeClass('fade-in');
+      }, 500);
+    }, 6000);
 
-    // تحديث التاريخ والوقت
     const dateInterval = setInterval(() => {
       setCurrentDateTime(getCurrentDate());
     }, 1000);
@@ -39,379 +50,166 @@ function WelcomePage() {
     };
   }, [navigate]);
 
+  const handleLogin = async e => {
+    e.preventDefault();
+    if (!email.trim() || !password) {
+      setErrors({ non_field_errors: ['يرجى إدخال البريد الإلكتروني وكلمة المرور.'] });
+      return;
+    }
+    setLoading(true);
+    setErrors({});
+    try {
+      const res = await axios.post(`${API_BASE}/api/auth/login/`, { email: email.trim(), password });
+      localStorage.setItem('authToken', res.data.key);
+      const cfg = { headers: { Authorization: `Token ${res.data.key}` } };
+      const user = await axios.get(`${API_BASE}/api/auth/user/`, cfg);
+      localStorage.setItem('isAdmin', user.data.is_staff);
+
+      // ✅ تخزين الاسم الكامل لاستخدامه في النافبار (بدون تغيير أي إعدادات أخرى)
+      const fullName =
+        [user.data.first_name, user.data.last_name].filter(Boolean).join(' ').trim() ||
+        user.data.username ||
+        '';
+      localStorage.setItem('fullName', fullName);
+
+      navigate('/dashboard');
+    } catch (err) {
+      setErrors((err.response && err.response.data) ? err.response.data : { non_field_errors: ['فشل الاتصال بالخادم. تحقق من الشبكة.'] });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="welcome-page">
-      {/* Header Section */}
-      <header className="welcome-header">
-        <div className="header-content">
-          <img src="/quran-logo.png" alt="القرآن الكريم" className="welcome-logo" />
-          <h1 className="welcome-title">برنامج حفظ القرآن الكريم</h1>
-          <p className="welcome-subtitle">رفيقك الأمين في رحلة حفظ كتاب الله</p>
-        </div>
-      </header>
+      <div className="main-container">
+        {/* Login on right */}
+        <div className="login-section">
+          <div className="login-container">
+            <h2 className="login-title">تسجيل الدخول</h2>
+            {errors.non_field_errors && (
+              <div className="error-message">{errors.non_field_errors[0]}</div>
+            )}
+            <form onSubmit={handleLogin} className="login-form">
+              <div className="form-group">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className={`form-input ${errors.email ? 'error' : ''}`}
+                  placeholder="البريد الإلكتروني"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  className={`form-input ${errors.password ? 'error' : ''}`}
+                  placeholder="كلمة المرور"
+                  required
+                />
+              </div>
+              <button type="submit" disabled={loading} className="login-button">
+                {loading ? 'جاري الدخول...' : 'تسجيل الدخول'}
+              </button>
+            </form>
 
-      {/* Quote Section */}
-      <section className="quote-section">
-        <div className="quote-container">
-          <div className="quote-text" key={currentQuote}>
-            {quranQuotes[currentQuote]}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="features-section">
-        <div className="container">
-          <h2>مميزات البرنامج</h2>
-          <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-icon">📚</div>
-              <h3>تتبع الحفظ</h3>
-              <p>سجل تقدمك في حفظ السور والآيات بطريقة منظمة ومرئية</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">🔄</div>
-              <h3>نظام المراجعة</h3>
-              <p>تذكيرات ذكية للمراجعة وتتبع آخر مراجعة لكل سورة</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">🏆</div>
-              <h3>نظام الإنجازات</h3>
-              <p>احصل على نقاط وإنجازات عند إكمال حفظ السور</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">🎧</div>
-              <h3>استماع وقراءة</h3>
-              <p>روابط مباشرة للاستماع وقراءة وتفسير السور</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">🕌</div>
-              <h3>أذكار المسلم</h3>
-              <p>مجموعة شاملة من الأذكار اليومية والمناسبات</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">📊</div>
-              <h3>إحصائيات مفصلة</h3>
-              <p>تقارير شاملة عن تقدمك ونشاطك في الحفظ</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="cta-section">
-        <div className="container">
-          <div className="cta-content">
-            <h2>ابدأ رحلتك في حفظ القرآن الكريم</h2>
-            <p>انضم إلى آلاف المسلمين الذين يستخدمون برنامجنا لحفظ كتاب الله</p>
-            <div className="cta-buttons">
-              <Link to="/register" className="btn-primary large">
-                إنشاء حساب جديد
-              </Link>
-              <Link to="/login" className="btn-secondary large">
-                تسجيل الدخول
+            {/* زر “نسيت كلمة المرور” */}
+            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+              <Link to="/forgot-password" className="forgot-password-link">
+                نسيت كلمة المرور ؟
               </Link>
             </div>
+
+            <div className="divider"><span>أو</span></div>
+            <Link to="/register" className="register-button">إنشاء حساب جديد</Link>
           </div>
         </div>
-      </section>
 
-      {/* Footer */}
-      <footer className="welcome-footer">
-        <div className="container">
-          <div className="footer-dates">
-            <div className="footer-date-item">
-              <span className="date-icon">📅</span>
-              <span>{currentDateTime.gregorian}</span>
+        {/* Info on left */}
+        <div className="info-section">
+          <div className="app-branding">
+            <div className="app-logo">
+              <div className="quran-icon">📖</div>
+              <h1 className="app-title">حفظ القرآن الكريم</h1>
+              <p className="app-tagline">رفيقك في رحلة حفظ كتاب الله</p>
             </div>
-            <div className="footer-date-item">
-              <span className="date-icon">🌙</span>
-              <span>{currentDateTime.hijri}</span>
+            <div className="verse-display">
+              <div className={`verse-content ${fadeClass}`}>
+                <p className="arabic-text">{quranQuotes[currentQuote].arabic}</p>
+                <p className="translation">{quranQuotes[currentQuote].translation}</p>
+                <span className="reference">{quranQuotes[currentQuote].reference}</span>
+              </div>
             </div>
-            <div className="footer-date-item">
-              <span className="date-icon">🕐</span>
-              <span>{currentDateTime.time}</span>
+            <div className="app-features">
+              <div className="feature-item">
+                <span className="feature-icon">📚</span>
+                <div className="feature-text">
+                  <h3>حفظ منظم ودقيق</h3>
+                  <p>تتبع تقدمك في حفظ القرآن الكريم</p>
+                </div>
+              </div>
+              <div className="feature-item">
+                <span className="feature-icon">🎯</span>
+                <div className="feature-text">
+                  <h3>أهداف يومية</h3>
+                  <p>حدد أهدافك واحصل على التحفيز</p>
+                </div>
+              </div>
+              <div className="feature-item">
+                <span className="feature-icon">🔄</span>
+                <div className="feature-text">
+                  <h3>مراجعة ذكية</h3>
+                  <p>تذكير بالآيات التي تحتاج إلى مراجعة</p>
+                </div>
+              </div>
             </div>
           </div>
-          <p>&copy; 2024 برنامج حفظ القرآن الكريم - جميع الحقوق محفوظة</p>
         </div>
-      </footer>
-
+      </div>
+      {/* Footer bar with date */}
+      <div className="footer-bar">
+        {(currentDateTime && currentDateTime.gregorian) || ''} — {(currentDateTime && currentDateTime.hijri) || ''}
+      </div>
       <style jsx>{`
         .welcome-page {
-          min-height: 100vh;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          overflow-x: hidden;
+          display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: #f0f2f5;
         }
-
-        .welcome-header {
-          padding: 80px 20px 60px;
-          text-align: center;
-          position: relative;
-        }
-
-        .header-content {
-          max-width: 800px;
-          margin: 0 auto;
-        }
-
-        .welcome-logo {
-          width: 120px;
-          height: 120px;
-          object-fit: contain;
-          margin-bottom: 30px;
-          filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
-          animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-        }
-
-        .welcome-title {
-          font-size: 3.5rem;
-          font-weight: bold;
-          margin: 0 0 20px 0;
-          text-shadow: 0 4px 8px rgba(0,0,0,0.3);
-          background: linear-gradient(45deg, #fff, #f8f9fa);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        .welcome-subtitle {
-          font-size: 1.4rem;
-          margin: 0;
-          opacity: 0.9;
-          font-weight: 300;
-        }
-
-        .quote-section {
-          padding: 40px 20px;
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px);
-          border-top: 1px solid rgba(255, 255, 255, 0.2);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .quote-container {
-          max-width: 600px;
-          margin: 0 auto;
-          text-align: center;
-        }
-
-        .quote-text {
-          font-size: 2rem;
-          font-family: 'Amiri', 'Times New Roman', serif;
-          font-weight: bold;
-          text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-          animation: fadeInUp 1s ease-out;
-        }
-
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .features-section {
-          padding: 80px 20px;
-          background: white;
-          color: #333;
-        }
-
-        .container {
-          max-width: 1200px;
-          margin: 0 auto;
-        }
-
-        .features-section h2 {
-          text-align: center;
-          font-size: 2.5rem;
-          margin-bottom: 60px;
-          color: #2c3e50;
-        }
-
-        .features-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 40px;
-        }
-
-        .feature-card {
-          background: white;
-          padding: 40px 30px;
-          border-radius: 15px;
-          text-align: center;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-          border: 1px solid #f0f0f0;
-        }
-
-        .feature-card:hover {
-          transform: translateY(-10px);
-          box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-        }
-
-        .feature-icon {
-          font-size: 4rem;
-          margin-bottom: 20px;
-        }
-
-        .feature-card h3 {
-          font-size: 1.5rem;
-          margin: 0 0 15px 0;
-          color: #2c3e50;
-        }
-
-        .feature-card p {
-          color: #666;
-          line-height: 1.6;
-          margin: 0;
-        }
-
-        .cta-section {
-          padding: 80px 20px;
-          background: linear-gradient(135deg, #2c3e50, #34495e);
-          text-align: center;
-        }
-
-        .cta-content h2 {
-          font-size: 2.5rem;
-          margin: 0 0 20px 0;
-          font-weight: bold;
-        }
-
-        .cta-content p {
-          font-size: 1.2rem;
-          margin: 0 0 40px 0;
-          opacity: 0.9;
-          max-width: 600px;
-          margin-left: auto;
-          margin-right: auto;
-        }
-
-        .cta-buttons {
-          display: flex;
-          gap: 20px;
-          justify-content: center;
-          flex-wrap: wrap;
-        }
-
-        .btn-primary, .btn-secondary {
-          padding: 15px 40px;
-          border-radius: 50px;
-          text-decoration: none;
-          font-weight: bold;
-          font-size: 1.1rem;
-          transition: all 0.3s ease;
-          display: inline-block;
-          min-width: 200px;
-        }
-
-        .btn-primary.large {
-          background: linear-gradient(135deg, #27ae60, #2ecc71);
-          color: white;
-          box-shadow: 0 8px 20px rgba(39, 174, 96, 0.3);
-        }
-
-        .btn-primary.large:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 12px 25px rgba(39, 174, 96, 0.4);
-        }
-
-        .btn-secondary.large {
-          background: transparent;
-          color: white;
-          border: 2px solid white;
-        }
-
-        .btn-secondary.large:hover {
-          background: white;
-          color: #2c3e50;
-          transform: translateY(-3px);
-        }
-
-        .welcome-footer {
-          padding: 40px 20px;
-          background: rgba(0, 0, 0, 0.2);
-          text-align: center;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .footer-dates {
-          display: flex;
-          justify-content: center;
-          gap: 30px;
-          margin-bottom: 20px;
-          flex-wrap: wrap;
-        }
-
-        .footer-date-item {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: rgba(255, 255, 255, 0.1);
-          padding: 8px 15px;
-          border-radius: 20px;
-          backdrop-filter: blur(10px);
-          font-size: 0.9rem;
-          font-weight: 500;
-        }
-
-        .date-icon {
-          font-size: 1.1rem;
-        }
-
-        .welcome-footer p {
-          margin: 0;
-          opacity: 0.8;
-        }
-
-        @media (max-width: 768px) {
-          .welcome-title {
-            font-size: 2.5rem;
-          }
-
-          .welcome-subtitle {
-            font-size: 1.2rem;
-          }
-
-          .quote-text {
-            font-size: 1.5rem;
-          }
-
-          .features-grid {
-            grid-template-columns: 1fr;
-            gap: 30px;
-          }
-
-          .feature-card {
-            padding: 30px 20px;
-          }
-
-          .cta-buttons {
-            flex-direction: column;
-            align-items: center;
-          }
-
-          .btn-primary.large, .btn-secondary.large {
-            width: 100%;
-            max-width: 300px;
-          }
-          
-          .footer-dates {
-            flex-direction: column;
-            gap: 15px;
-          }
-        }
+        .main-container { display: flex; flex: 1; }
+        .login-section { flex: 1; max-width: 400px; background: #fff; box-shadow: 2px 0 8px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; padding: 60px; }
+        .login-container { width: 100%; }
+        .login-title { font-size: 24px; margin-bottom: 24px; text-align: center; }
+        .error-message { background: #ffebee; color: #c62828; padding: 8px; border-radius: 6px; margin-bottom: 16px; text-align: center; }
+        .form-group { margin-bottom: 16px; }
+        .form-input { width: 100%; padding: 14px; font-size: 16px; border: 1px solid #dddfe2; border-radius: 6px; }
+        .form-input:focus { outline: none; border-color: #1877f2; background: #fff; }
+        .login-button, .register-button { width: 100%; padding: 14px; font-size: 18px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; margin-bottom: 16px; }
+        .login-button { background: #c59d5f; color: #fff; }
+        .login-button:disabled { background: #e4e6ea; color: #bcc0c4; }
+        .register-button { background: #a58e67; color: #fff; }
+        .divider { text-align: center; margin: 16px 0; position: relative; }
+        .divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #dadde1; }
+        .divider span { background: #fff; padding: 0 8px; color: #65676b; font-size: 14px; }
+        .info-section { flex: 1; background: linear-gradient(135deg, #0d3b66 0%, #093545 100%); padding: 60px; color: #f0c674; display: flex; align-items: center; justify-content: center; }
+        .app-branding { max-width: 600px; text-align: center; }
+        .quran-icon { font-size: 48px; margin-bottom: 16px; animation: gentle-pulse 4s infinite; }
+        .app-title { font-size: 36px; margin-bottom: 8px; }
+        .app-tagline { font-size: 18px; margin-bottom: 24px; }
+        .verse-display { margin-bottom: 24px; }
+        .verse-content { transition: opacity 0.5s; padding: 16px; background: rgba(255,255,255,0.2); border-radius: 8px; }
+        .fade-in { opacity:1; } .fade-out { opacity:0; }
+        .arabic-text { font-size: 20px; margin-bottom: 8px; }
+        .translation { font-size: 14px; margin-bottom: 4px; }
+        .reference { font-size: 12px; }
+        .app-features { margin-top: 24px; }
+        .feature-item { display:flex; align-items:flex-start; margin-bottom:16px; }
+        .feature-icon { font-size:20px; margin-right:12px; }
+        .feature-text h3 { font-size:16px; margin-bottom:4px; }
+        .feature-text p { font-size:14px; }
+        .footer-bar { background: #fff; text-align:center; padding:12px 0; font-size:14px; color:#65676b; border-top:1px solid #dddfe2; }
+        @keyframes gentle-pulse { 0%,100%{transform:scale(1);}50%{transform:scale(1.1);} }
       `}</style>
     </div>
   );

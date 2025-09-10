@@ -69,7 +69,7 @@ function RegisterPage() {
 
     try {
       await axios.post(`${API_BASE}/api/auth/registration/`, formData);
-      navigate('/login', { state: { message: 'تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.' } });
+      navigate('/', { state: { message: 'تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.' } });
     } catch (err) {
       if (err.response && err.response.data) {
         setErrors(err.response.data);

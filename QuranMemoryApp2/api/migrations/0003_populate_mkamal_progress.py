@@ -1,10 +1,10 @@
-# api/migrations/xxxx_populate_mkamal_progress.py (النسخة النهائية والمصححة)
+# api/migrations/0003_populate_mkamal_progress.py
 
 from django.db import migrations
-# لا تقم باستيراد User من هنا، سنستخدم apps.get_model
+from django.contrib.auth.hashers import make_password
 
 def populate_data(apps, schema_editor):
-    # هذه هي الطريقة الصحيحة للحصول على الموديلات داخل ملف الهجرة
+    # الحصول على الموديلات من apps.get_model
     User = apps.get_model('auth', 'User')
     Surah = apps.get_model('api', 'Surah')
     Memorization = apps.get_model('api', 'Memorization')
@@ -12,11 +12,11 @@ def populate_data(apps, schema_editor):
     # ابحث عن المستخدم أو أنشئه إذا لم يكن موجوداً
     user_obj, created = User.objects.get_or_create(username='mkamal')
     if created:
-        user_obj.set_password('a_strong_password_123') # استبدل بكلمة مرور قوية
+        # تخزين الباسوورد مشفرًا بدون استخدام set_password
+        user_obj.password = make_password('a_strong_password_123')  # استبدل بكلمة مرور قوية
         user_obj.save()
 
     # حذف أي سجلات حفظ قديمة لهذا المستخدم لضمان عدم التكرار
-    # الآن نحن نستخدم كائن المستخدم الصحيح (user_obj)
     Memorization.objects.filter(user=user_obj).delete()
     
     # تسجيل الحفظ للسور من 25 إلى 114
@@ -27,17 +27,15 @@ def populate_data(apps, schema_editor):
                 user=user_obj,
                 surah=surah_obj,
                 start_ayah=1,
-                end_ayah=surah_obj.total_verses # تم حفظ السورة كاملة
+                end_ayah=surah_obj.total_verses  # تم حفظ السورة كاملة
             )
         except Surah.DoesNotExist:
-            # هذا السطر سيتجاهل أي سور غير موجودة (للأمان)
             print(f"Warning: Surah with number {i} not found. Skipping.")
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        # تأكد من أن هذا هو اسم ملف الهجرة الذي يضيف السور
-        ('api', '0002_populate_surahs'), 
+        ('api', '0002_populate_surahs'),  # تأكد من صحة اسم الهجرة السابقة
     ]
 
     operations = [
