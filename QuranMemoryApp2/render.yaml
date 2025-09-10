@@ -6,9 +6,24 @@ services:
     buildCommand: |
       python -m pip install --upgrade pip
       pip install -r QuranMemoryApp2/requirements.txt
-      cd QuranMemoryApp2 && python manage.py collectstatic --noinput
+      cd QuranMemoryApp2
+      # تأكد من تشغيل المايجريشن قبل تجميع الستاتيك
+      python manage.py migrate --noinput
+      python manage.py collectstatic --noinput
+      # أنشئ/حدّث صف django_site تلقائياً (غير domain لو لازم)
+      python - <<'PY'
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE','quran_backend.settings')
+import django
+django.setup()
+from django.contrib.sites.models import Site
+Site.objects.update_or_create(
+    id=1,
+    defaults={'domain':'quran-app-8ay9.onrender.com','name':'Quran App'}
+)
+PY
     startCommand: |
-      bash -lc "cd QuranMemoryApp2 && python manage.py migrate && gunicorn quran_backend.wsgi:application --bind 0.0.0.0:$PORT"
+      bash -lc "cd QuranMemoryApp2 && gunicorn quran_backend.wsgi:application --bind 0.0.0.0:$PORT"
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: quran_backend.settings
