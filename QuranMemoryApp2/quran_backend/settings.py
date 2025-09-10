@@ -60,7 +60,7 @@ ROOT_URLCONF = 'quran_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "quran_backend" / "templates"],  # هنضيف فولدر templates
+        'DIRS': [BASE_DIR / "quran_backend" / "templates"],  # فولدر templates
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -76,7 +76,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'quran_backend.wsgi.application'
 ASGI_APPLICATION = 'quran_backend.asgi.application'
 
-# قاعدة البيانات
+# ========== قاعدة البيانات ==========
 DATABASE_URL = config("DATABASE_URL", default="")
 if DATABASE_URL:
     DATABASES = {
@@ -90,7 +90,7 @@ else:
         }
     }
 
-# كلمات مرور
+# ========== كلمات مرور ==========
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -98,8 +98,8 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# اللغات
-LANGUAGE_CODE = 'ar'   # افتراضي عربي
+# ========== اللغات ==========
+LANGUAGE_CODE = 'ar'
 TIME_ZONE = 'Africa/Cairo'
 
 USE_I18N = True
@@ -114,16 +114,17 @@ LOCALE_PATHS = [
     BASE_DIR / 'locale',
 ]
 
-# static & media
+# ========== static & media ==========
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+# في production مش محتاج STATICFILES_DIRS
+
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# rest framework
+# ========== rest framework ==========
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
@@ -144,17 +145,22 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-ACCOUNT_LOGIN_METHODS = {'email'}
-ACCOUNT_SIGNUP_FIELDS = ['email', 'username', 'password1', 'password2']
+# ========== Allauth ==========
+ACCOUNT_AUTHENTICATION_METHOD = "email"  # الدخول بالبريد فقط
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_ADAPTER = 'api.adapters.CustomAccountAdapter'
 
+# ========== CORS & CSRF ==========
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:8000",
     "https://gleeful-haupia-3d4fa4.netlify.app",
-    ]
+]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://quran-app-8ay9.onrender.com",
@@ -171,8 +177,8 @@ JAZZMIN_SETTINGS = {
     "welcome_sign": "Quran Admin Page",
     "copyright": "© 2025 Quran Memory",
 
-    "site_logo": "images/quran-logo.png",
-    "login_logo": "images/quran-logo.png",
+    "site_logo": None,   # مؤقت لحد ما ترفع صورة
+    "login_logo": None,
 
     "show_sidebar": True,
     "navigation_expanded": True,
